@@ -9,7 +9,6 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$parent_path"
 
 MODEL="models/bunny.ply"
-LOD_FLAG=""
 COMMAND=$1
 shift
 
@@ -23,9 +22,6 @@ do
         ;;
         +(small_museum))
         MODEL="resources/${key}.txt"
-        ;;
-        --LOD|--calc-LOD)
-        LOD_FLAG="--calc-LOD"
         ;;
     esac
     shift
@@ -62,6 +58,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $MODEL $LOD_FLAG
+    ./BaseCode $MODEL
     ;;
 esac
