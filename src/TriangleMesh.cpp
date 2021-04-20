@@ -6,8 +6,17 @@
 using namespace std;
 
 
-TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos) {}
+TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos)
+{
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, pos);
+}
 
+
+glm::mat4& TriangleMesh::getModelMatrix()
+{
+    return model;
+}
 
 void TriangleMesh::addVertex(const glm::vec3& position)
 {
@@ -60,9 +69,9 @@ void TriangleMesh::sendToOpenGL(ShaderProgram& program)
         normal = glm::normalize(normal);
         for (unsigned int vrtx = 0; vrtx < 3; vrtx++)
         {
-            data.push_back(vertices[triangles[tri + vrtx]].x + pos.x);
-            data.push_back(vertices[triangles[tri + vrtx]].y + pos.y);
-            data.push_back(vertices[triangles[tri + vrtx]].z + pos.z);
+            data.push_back(vertices[triangles[tri + vrtx]].x);
+            data.push_back(vertices[triangles[tri + vrtx]].y);
+            data.push_back(vertices[triangles[tri + vrtx]].z);
 
             data.push_back(normal.x);
             data.push_back(normal.y);

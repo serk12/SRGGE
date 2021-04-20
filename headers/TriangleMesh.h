@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "ShaderProgram.h"
 
 
@@ -20,16 +21,18 @@ public:
 
     void addVertex(const glm::vec3& position);
     void addTriangle(int v0, int v1, int v2);
-
     void buildCube();
 
     void sendToOpenGL(ShaderProgram& program);
     void render() const;
     void free();
 
+    glm::mat4& getModelMatrix();
+
 private:
     vector<glm::vec3> vertices;
     vector<int> triangles;
+    glm::mat4 model;
     glm::vec3 pos;
 
     GLuint vao;

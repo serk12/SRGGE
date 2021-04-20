@@ -26,13 +26,10 @@ public:
     void mouseMove(int x, int y, const glm::ivec2& lastMousePos, bool *mouseButtons);
 
 private:
-    void initShaders();
-    void computeModelViewMatrix();
-
     void loadMesh();
     void loadMesh(const std::string& fn, glm::vec3 pos = { 0, -1, 0 });
     void unloadMesh();
-
+    void initShaders();
     void loadTileMap();
 
 private:

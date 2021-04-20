@@ -56,9 +56,9 @@ void Scene::loadMesh(const std::string &fn, glm::vec3 pos) {
 
 void Scene::loadTileMap() {
   TileMapModels tilemap = TileMapLoader::instance().load(filename);
-  int i = 0;
+  int i = -tilemap.size()/2;
   for (auto t : tilemap) {
-    int j = 0;
+    int j = -tilemap[0].size()/2;
     for (std::string m : t) {
       if (m != TileMapLoader::EMPTY) {
         if (m != TileMapLoader::WALL) {
@@ -88,14 +88,11 @@ void Scene::update(int deltaTime) { player.update(deltaTime); }
 
 void Scene::render() {
   if (meshes.size() > 0) {
-    glm::mat3 normalMatrix;
-
     basicProgram.use();
     basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
-    basicProgram.setUniformMatrix4f("modelview", player.getModelViewMatrix());
-    normalMatrix = glm::inverseTranspose(player.getModelViewMatrix());
-    basicProgram.setUniformMatrix3f("normalMatrix", normalMatrix);
+    basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
     for (auto &mesh : meshes) {
+      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
       basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
       if (bPolygonFill) {
         basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
