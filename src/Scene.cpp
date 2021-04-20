@@ -91,13 +91,13 @@ void Scene::render() {
     basicProgram.use();
     basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
     basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
+    basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
+    basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     for (auto &mesh : meshes) {
       basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
-      basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
-      if (bPolygonFill) {
-        basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      } else {
+      if (!bPolygonFill) {
         basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(0.5f, 1.0f);
