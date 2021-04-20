@@ -20,7 +20,7 @@ do
         +(wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
         MODEL="models/${key}.ply"
         ;;
-        +(small_museum))
+        +(small_museum|big_grid))
         MODEL="resources/${key}.txt"
         ;;
     esac
