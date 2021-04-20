@@ -1,4 +1,4 @@
-#version 130
+#version 330
 
 uniform vec4 color;
 uniform int bLighting;

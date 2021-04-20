@@ -92,6 +92,7 @@ void TextRender::renderText(std::string text, float x, float y, float scale, glm
     glUniformMatrix4fv(glGetUniformLocation(textProgram.getProgram(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniform3f(glGetUniformLocation(textProgram.getProgram(), "textColor"), color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindVertexArray(VAO);
 
     // iterate through all characters

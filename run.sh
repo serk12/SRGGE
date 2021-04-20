@@ -8,7 +8,7 @@ set +a
 parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$parent_path"
 
-MODEL="models/bunny.ply"
+MODEL="resources/big_grid.txt"
 COMMAND=$1
 shift
 

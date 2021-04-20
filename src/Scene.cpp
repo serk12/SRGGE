@@ -56,9 +56,9 @@ void Scene::loadMesh(const std::string &fn, glm::vec3 pos) {
 
 void Scene::loadTileMap() {
   TileMapModels tilemap = TileMapLoader::instance().load(filename);
-  int i = 0;
+  int i = -tilemap.size()/2;
   for (auto t : tilemap) {
-    int j = 0;
+    int j = -tilemap[0].size()/2;
     for (std::string m : t) {
       if (m != TileMapLoader::EMPTY) {
         if (m != TileMapLoader::WALL) {
@@ -88,19 +88,16 @@ void Scene::update(int deltaTime) { player.update(deltaTime); }
 
 void Scene::render() {
   if (meshes.size() > 0) {
-    glm::mat3 normalMatrix;
-
     basicProgram.use();
     basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
-    basicProgram.setUniformMatrix4f("modelview", player.getModelViewMatrix());
-    normalMatrix = glm::inverseTranspose(player.getModelViewMatrix());
-    basicProgram.setUniformMatrix3f("normalMatrix", normalMatrix);
+    basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
+    basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
+    basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     for (auto &mesh : meshes) {
-      basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
-      if (bPolygonFill) {
-        basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      } else {
+      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
+      if (!bPolygonFill) {
         basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(0.5f, 1.0f);

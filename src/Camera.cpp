@@ -14,12 +14,12 @@ Camera::~Camera() {}
 
 void Camera::init(float initAngleX, float initAngleY)
 {
-    pos                    = glm::vec3(0.0f, 0.0f, -2.0f);
+    pos                    = glm::vec3(0.0f, 0.8f, 0.0f);
     angleX                 = initAngleX;
     angleY                 = initAngleY;
     rangeDistanceCamera[0] = 1.0f;
     rangeDistanceCamera[1] = 3.0f;
-    computeModelViewMatrix();
+    computeViewMatrix();
 }
 
 void Camera::resizeCameraViewport(int width, int height)
@@ -32,7 +32,7 @@ void Camera::rotateCamera(float xRotation, float yRotation)
     angleX += xRotation;
     angleX  = glm::max(-75.0f, glm::min(angleX, 75.0f));
     angleY += yRotation;
-    computeModelViewMatrix();
+    computeViewMatrix();
 }
 
 void Camera::displaceCamera(const glm::vec3& disp)
@@ -41,15 +41,15 @@ void Camera::displaceCamera(const glm::vec3& disp)
     auxDisp = glm::rotate(auxDisp, angleY / 180.f * PI, glm::vec3(0.0f, -1.0f, 0.0f));
     glm::vec4 aux = auxDisp * glm::vec4(disp, 1.0f);
     pos += glm::vec3(aux / aux[3]);
-    computeModelViewMatrix();
+    computeViewMatrix();
 }
 
-void Camera::computeModelViewMatrix()
+void Camera::computeViewMatrix()
 {
-    modelview = glm::mat4(1.0f);
-    modelview = glm::rotate(modelview, angleX / 180.f * PI, glm::vec3(1.0f, 0.0f, 0.0f));
-    modelview = glm::rotate(modelview, angleY / 180.f * PI, glm::vec3(0.0f, 1.0f, 0.0f));
-    modelview = glm::translate(modelview, pos + glm::vec3(0.0f, distance, 0.0f));
+    view = glm::mat4(1.0f);
+    view = glm::rotate(view, angleX / 180.f * PI, glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::rotate(view, angleY / 180.f * PI, glm::vec3(0.0f, 1.0f, 0.0f));
+    view = glm::translate(view, pos + glm::vec3(0.0f, distance, 0.0f));
 }
 
 glm::mat4& Camera::getProjectionMatrix()
@@ -57,7 +57,7 @@ glm::mat4& Camera::getProjectionMatrix()
     return projection;
 }
 
-glm::mat4& Camera::getModelViewMatrix()
+glm::mat4& Camera::getViewMatrix()
 {
-    return modelview;
+    return view;
 }

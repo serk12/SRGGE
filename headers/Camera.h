@@ -15,7 +15,7 @@ public:
     ~Camera();
 
     glm::mat4& getProjectionMatrix();
-    glm::mat4& getModelViewMatrix();
+    glm::mat4& getViewMatrix();
 
 protected:
     void init(float initAngleX = 0.0f, float initAngleY = 0.0f);
@@ -28,11 +28,11 @@ protected:
     float angleX, angleY, distance; // Camera parameters
 
 private:
-    void computeModelViewMatrix();
+    void computeViewMatrix();
 private:
     glm::vec3 pos;
     float rangeDistanceCamera[2];
-    glm::mat4 projection, modelview; // OpenGL matrices
+    glm::mat4 projection, view; // OpenGL matrices
 };
 
 
