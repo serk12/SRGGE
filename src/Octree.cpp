@@ -3,7 +3,8 @@
 Octree::Octree() {}
 
 Octree::Octree(const std::vector<glm::vec3> &vertices, unsigned int qtty) {
-  glm::vec3 max = vertices[0], min = vertices[0];
+  glm::vec3 max, min;
+  max = min = vertices[0];
   for (auto v : vertices) {
     for (unsigned int i = 0; i < 3; ++i) {
       if (v[i] < min[i])
