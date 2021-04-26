@@ -10,6 +10,7 @@ cd "$parent_path"
 
 MODEL="resources/small_museum.txt"
 LOD_FLAG=""
+LOD_LEVEL=""
 COMMAND=$1
 shift
 
@@ -26,6 +27,10 @@ do
         ;;
         --LOD|--calc-LOD)
         LOD_FLAG="--calc-LOD"
+        LOD_LEVEL=4
+        ;;
+        0|1|2|3|4)
+        LOD_LEVEL=$1
         ;;
     esac
     shift
@@ -62,6 +67,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $MODEL $LOD_FLAG
+    ./BaseCode $MODEL $LOD_FLAG $LOD_LEVEL
     ;;
 esac
