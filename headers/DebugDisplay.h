@@ -5,16 +5,16 @@
 
 class DebugDisplay {
 public:
-    DebugDisplay();
+  DebugDisplay();
 
-    void init();
-    bool update(int dt);
-    bool render();
+  void init();
+  bool update(int dt);
+  bool render();
 
 private:
-    int deltaTime;
-    int qtty;
-    TextRender textRender;
+  int deltaTime;
+  int qtty;
+  TextRender textRender;
 };
 
 #endif // _DEBUGDISPLAY_INCLUDE

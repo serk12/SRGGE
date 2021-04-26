@@ -56,9 +56,9 @@ void Scene::loadMesh(const std::string &fn, glm::vec3 pos) {
 
 void Scene::loadTileMap() {
   TileMapModels tilemap = TileMapLoader::instance().load(filename);
-  int i = -tilemap.size()/2;
+  int i = -tilemap.size() / 2;
   for (auto t : tilemap) {
-    int j = -tilemap[0].size()/2;
+    int j = -tilemap[0].size() / 2;
     for (std::string m : t) {
       if (m != TileMapLoader::EMPTY) {
         if (m != TileMapLoader::WALL) {

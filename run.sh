@@ -9,6 +9,8 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$parent_path"
 
 MODEL="resources/big_grid.txt"
+LOD_FLAG=""
+LOD_LEVEL=""
 COMMAND=$1
 shift
 
@@ -22,6 +24,13 @@ do
         ;;
         +(small_museum|big_grid))
         MODEL="resources/${key}.txt"
+        ;;
+        --LOD|--calc-LOD)
+        LOD_FLAG="--calc-LOD"
+        LOD_LEVEL=4
+        ;;
+        0|1|2|3|4)
+        LOD_LEVEL=$1
         ;;
     esac
     shift
@@ -58,6 +67,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $MODEL
+    ./BaseCode $MODEL $LOD_FLAG $LOD_LEVEL
     ;;
 esac
