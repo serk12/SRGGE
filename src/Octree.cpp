@@ -40,14 +40,13 @@ Octree::Octree(const std::vector<glm::vec3> &vertices) {
     }
   }
 
-  qtty = vertices.size() / DIM_SIZE;
   glm::vec3 length = octreeInfo->max - octreeInfo->min;
   float m = length[0];
   for (unsigned int i = 1; i < DIM_SIZE; ++i) {
     if (m < length[i])
       m = length[i];
   }
-  octreeInfo->dis = m / qtty;
+  octreeInfo->dis = m;
   size = glm::vec3(m);
 
   for (unsigned int i = 0; i < vertices.size(); ++i) {
