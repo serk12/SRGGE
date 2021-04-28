@@ -10,8 +10,8 @@
 enum Behaviour { Singleton, Discrete };
 
 struct Vertex {
-  const glm::vec3 vertice;
-  const int index;
+  glm::vec3 vertex;
+  int index;
 };
 
 struct OctreeInfo {
@@ -26,19 +26,25 @@ public:
   Octree();
   ~Octree();
   Octree(const std::vector<glm::vec3> &vertices);
+  Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s);
   bool add(const glm::vec3 &vertice, const int index);
+  glm::vec3 getElementVec(int i) const;
+  int getElementIndex(int i) const;
+  int getQttyElements() const;
+  int getQtty() const;
+  Octree &getChildren(int i);
 
 private:
   void add(Vertex &vertex);
-  glm::vec3 getDpos() const;
-  glm::vec3 getDsize() const;
-  bool needsDivision() const;
-  void checkError(const glm::vec3 &vertex) const;
+  glm::ivec3 getDpos() const;
+  glm::ivec3 getDsize() const;
+  bool needsDivision(const glm::vec3 &vertice) const;
+  bool checkError(const glm::vec3 &vertex) const;
   int vertexToIndex(const glm::vec3 &vertex) const;
   glm::vec3 indexToVertex(int i) const;
 
   std::vector<Octree> childrens;
-  std::list<Vertex> elements;
+  std::vector<Vertex> elements;
   OctreeInfo *octreeInfo;
   glm::vec3 pos, size;
   int qtty;

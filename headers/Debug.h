@@ -1,6 +1,7 @@
 #ifndef _DEBUG_INCLUDE
 #define _DEBUG_INCLUDE
 
+#include "Octree.h"
 #include "TileMapLoader.h"
 #include <iostream>
 
@@ -18,6 +19,8 @@ public:
       print(r);
     }
   }
+
+  static void print(const Octree &o) { std::cout << o.getQtty() << std::endl; }
 };
 
 #endif // ifndef _DEBUG_INCLUDE

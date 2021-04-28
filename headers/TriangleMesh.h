@@ -25,6 +25,8 @@ public:
 
   glm::mat4 &getModelMatrix();
 
+  vector<glm::vec3> getVertices() const;
+
 private:
   vector<glm::vec3> vertices;
   vector<int> triangles;

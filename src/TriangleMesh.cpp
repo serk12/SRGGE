@@ -85,3 +85,5 @@ void TriangleMesh::free() {
   vertices.clear();
   triangles.clear();
 }
+
+vector<glm::vec3> TriangleMesh::getVertices() const { return vertices; }
