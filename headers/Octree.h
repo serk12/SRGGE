@@ -32,7 +32,11 @@ public:
   int getElementIndex(int i) const;
   int getQttyElements() const;
   int getQtty() const;
-  Octree &getChildren(int i);
+  const Octree &getChildren(int i) const;
+
+  inline static const int VECT_SIZE = 8;
+  inline static const int DIM_SIZE = 3;
+  inline static const Behaviour DEFAULT_BEHAVIOUR = Behaviour::Singleton;
 
 private:
   void add(Vertex &vertex);
@@ -48,10 +52,6 @@ private:
   OctreeInfo *octreeInfo;
   glm::vec3 pos, size;
   int qtty;
-
-  inline static const int VECT_SIZE = 8;
-  inline static const int DIM_SIZE = 3;
-  inline static const Behaviour DEFAULT_BEHAVIOUR = Behaviour::Singleton;
 };
 
 #endif //_OCTEE_INCLUDE

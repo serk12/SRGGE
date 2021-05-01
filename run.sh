@@ -8,7 +8,10 @@ set +a
 parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$parent_path"
 
-MODEL="resources/small_museum.txt"
+DEFAULT_TAILMAP="resources/small_museum.txt"
+DEFAULT_MODEL="models/bunny.ply"
+
+INPUT_FILE=$DEFAULT_TAILMAP
 LOD_FLAG=""
 LOD_LEVEL=""
 COMMAND=$1
@@ -20,12 +23,15 @@ do
     key="$1"
     case $key in
         +(wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
-        MODEL="models/${key}.ply"
+        INPUT_FILE="models/${key}.ply"
         ;;
         +(small_museum))
-        MODEL="resources/${key}.txt"
+        INPUT_FILE="resources/${key}.txt"
         ;;
         --LOD|--calc-LOD)
+        if [[ $INPUT_FILE == *".txt" ]]; then
+            INPUT_FILE=$DEFAULT_MODEL
+        fi
         LOD_FLAG="--calc-LOD"
         LOD_LEVEL=4
         ;;
@@ -67,6 +73,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $MODEL $LOD_FLAG $LOD_LEVEL
+    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL
     ;;
 esac

@@ -1,4 +1,5 @@
 #include "Octree.h"
+#include <iostream>
 
 Octree::~Octree() {
   childrens.clear();
@@ -105,20 +106,25 @@ bool Octree::needsDivision(const glm::vec3 &vertice) const {
 }
 
 void Octree::add(Vertex &vertex) {
-  if (needsDivision(vertex.vertex)) {
+  if (childrens.size() == VECT_SIZE) {
     int i = vertexToIndex(vertex.vertex);
-    childrens = std::vector<Octree>(VECT_SIZE);
-    for (unsigned int i = 0; i < VECT_SIZE; ++i) {
-      childrens[i] = Octree(octreeInfo, i, pos, size);
-    }
     childrens[i].add(vertex);
-    for (Vertex v : elements) {
-      i = vertexToIndex(v.vertex);
-      childrens[i].add(v);
-    }
-    elements.clear();
   } else {
-    elements.push_back(vertex);
+    if (needsDivision(vertex.vertex)) {
+      int i = vertexToIndex(vertex.vertex);
+      childrens = std::vector<Octree>(VECT_SIZE);
+      for (unsigned int i = 0; i < VECT_SIZE; ++i) {
+        childrens[i] = Octree(octreeInfo, i, pos, size);
+      }
+      childrens[i].add(vertex);
+      for (Vertex v : elements) {
+        i = vertexToIndex(v.vertex);
+        childrens[i].add(v);
+      }
+      elements.clear();
+    } else {
+      elements.push_back(vertex);
+    }
   }
   ++qtty;
 }
@@ -127,4 +133,4 @@ glm::vec3 Octree::getElementVec(int i) const { return elements[i].vertex; }
 int Octree::getElementIndex(int i) const { return elements[i].index; }
 int Octree::getQttyElements() const { return elements.size(); }
 int Octree::getQtty() const { return qtty; }
-Octree &Octree::getChildren(int i) { return childrens[i]; }
+const Octree &Octree::getChildren(int i) const { return childrens[i]; }
