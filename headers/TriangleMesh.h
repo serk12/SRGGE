@@ -24,12 +24,15 @@ public:
   void free();
 
   glm::mat4 &getModelMatrix();
+  glm::vec3 getPoss() const;
+  float getRadius() const;
 
 private:
   vector<glm::vec3> vertices;
   vector<int> triangles;
   glm::mat4 model;
-  glm::vec3 pos;
+  glm::vec3 pos, min, max;
+  float r;
 
   GLuint vao;
   GLuint vbo;

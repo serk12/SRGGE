@@ -86,6 +86,30 @@ void Scene::unloadMesh() {
 
 void Scene::update(int deltaTime) { player.update(deltaTime); }
 
+bool Scene::viewCulling(const TriangleMesh &mesh) {
+  auto frustum = player.getFrustum();
+  for (auto &p : frustum) {
+    if (glm::dot(glm::vec3(p), mesh.getPoss()) + p.w + mesh.getRadius() <= 0)
+      return false;
+  }
+  return true;
+}
+bool Scene::occlusionCulling(const TriangleMesh &mesh) { return true; }
+
+bool Scene::cullingTest(const TriangleMesh &mesh) {
+  switch (cullingPolicy) {
+  default:
+  case NONE:
+    return true;
+  case VIEW:
+    return viewCulling(mesh);
+  case OCCLUSION:
+    return occlusionCulling(mesh);
+  case ALL:
+    return viewCulling(mesh) && occlusionCulling(mesh);
+  }
+}
+
 void Scene::render() {
   if (meshes.size() > 0) {
     basicProgram.use();
@@ -96,18 +120,20 @@ void Scene::render() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     for (auto &mesh : meshes) {
-      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
-      if (!bPolygonFill) {
-        basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(0.5f, 1.0f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      if (cullingTest(*mesh)) {
+        basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
+        if (!bPolygonFill) {
+          basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+          glEnable(GL_POLYGON_OFFSET_FILL);
+          glPolygonOffset(0.5f, 1.0f);
+          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+          mesh->render();
+          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+          glDisable(GL_POLYGON_OFFSET_FILL);
+          basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
+        }
         mesh->render();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDisable(GL_POLYGON_OFFSET_FILL);
-        basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
       }
-      mesh->render();
     }
   }
 }

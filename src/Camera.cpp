@@ -19,6 +19,29 @@ void Camera::init(float initAngleX, float initAngleY) {
   computeViewMatrix();
 }
 
+std::vector<glm::vec4> Camera::getFrustum() {
+  std::vector<glm::vec4> result(6);
+  glm::mat4 m = getProjectionMatrix() * getViewMatrix();
+  // right
+  result[0] = glm::vec4(m[0][3] + m[0][0], m[1][3] + m[1][0], m[2][3] + m[2][0],
+                        m[3][3] + m[3][0]);
+  // left
+  result[1] = glm::vec4(m[0][3] - m[0][0], m[1][3] - m[1][0], m[2][3] - m[2][0],
+                        m[3][3] - m[3][0]);
+  // top
+  result[2] = glm::vec4(m[0][3] - m[0][1], m[1][3] - m[1][1], m[2][3] - m[2][1],
+                        m[3][3] - m[3][1]);
+  // bottom
+  result[3] = glm::vec4(m[0][3] + m[0][1], m[1][3] + m[1][1], m[2][3] + m[2][1],
+                        m[3][3] + m[3][1]);
+  // far
+  result[4] = glm::vec4(m[0][2], m[1][2], m[2][2], m[3][2]);
+  // near
+  result[5] = glm::vec4(m[0][3] - m[0][2], m[1][3] - m[1][2], m[2][3] - m[2][2],
+                        m[3][3] - m[3][2]);
+  return result;
+}
+
 void Camera::resizeCameraViewport(int width, int height) {
   projection = glm::perspective(60.f / 180.f * PI, float(width) / float(height),
                                 0.01f, 100.0f);

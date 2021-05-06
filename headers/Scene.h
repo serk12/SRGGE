@@ -10,6 +10,8 @@
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
 
+enum CullingMethod { NONE, VIEW, OCCLUSION, ALL };
+
 class Scene {
 public:
   Scene();
@@ -30,6 +32,9 @@ private:
   void unloadMesh();
   void initShaders();
   void loadTileMap();
+  bool cullingTest(const TriangleMesh &mesh);
+  bool viewCulling(const TriangleMesh &mesh);
+  bool occlusionCulling(const TriangleMesh &mesh);
 
 private:
   std::list<TriangleMesh *> meshes;
@@ -38,6 +43,7 @@ private:
   bool bPolygonFill;
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
+  CullingMethod cullingPolicy = CullingMethod::VIEW;
 };
 
 #endif // _SCENE_INCLUDE
