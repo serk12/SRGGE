@@ -16,7 +16,7 @@ void TriangleMesh::addVertex(const glm::vec3 &position) {
 }
 
 glm::vec3 TriangleMesh::getPoss() const { return pos; }
-float TriangleMesh::getRadius() const { return 0.5f; }
+float TriangleMesh::getRadius() const { return 1.0f; }
 
 void TriangleMesh::addTriangle(int v0, int v1, int v2) {
   triangles.push_back(v0);
