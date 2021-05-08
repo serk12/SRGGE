@@ -11,7 +11,7 @@ void Application::init(const std::string &filename) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  scene.init(filename);
+  scene.init(filename, CULLING_POLICY);
   debugDisplay.init();
   for (unsigned int i = 0; i < 256; i++) {
     keys[i] = false;

@@ -2,6 +2,7 @@
 #define _CAMERA_INCLUDE
 
 #include <glm/glm.hpp>
+#include <vector>
 
 // Camera contains the properies of the camera the scene is using
 // It is responsible for computing the associated GL matrices
@@ -13,6 +14,7 @@ public:
 
   glm::mat4 &getProjectionMatrix();
   glm::mat4 &getViewMatrix();
+  std::vector<glm::vec4> getFrustum();
 
 protected:
   void init(float initAngleX = 0.0f, float initAngleY = 0.0f);
@@ -22,14 +24,13 @@ protected:
   void displaceCamera(const glm::vec3 &disp);
 
 protected:
-  float angleX, angleY, distance; // Camera parameters
+  float angleX, angleY; // Camera parameters
+  glm::vec3 pos;
 
 private:
   void computeViewMatrix();
 
 private:
-  glm::vec3 pos;
-  float rangeDistanceCamera[2];
   glm::mat4 projection, view; // OpenGL matrices
 };
 

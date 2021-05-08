@@ -14,9 +14,30 @@ void Camera::init(float initAngleX, float initAngleY) {
   pos = glm::vec3(0.0f, 0.8f, 0.0f);
   angleX = initAngleX;
   angleY = initAngleY;
-  rangeDistanceCamera[0] = 1.0f;
-  rangeDistanceCamera[1] = 3.0f;
   computeViewMatrix();
+}
+
+std::vector<glm::vec4> Camera::getFrustum() {
+  std::vector<glm::vec4> result(6);
+  glm::mat4 m = getProjectionMatrix() * getViewMatrix();
+  // right
+  result[0] = glm::vec4(m[0][3] + m[0][0], m[1][3] + m[1][0], m[2][3] + m[2][0],
+                        m[3][3] + m[3][0]);
+  // left
+  result[1] = glm::vec4(m[0][3] - m[0][0], m[1][3] - m[1][0], m[2][3] - m[2][0],
+                        m[3][3] - m[3][0]);
+  // top
+  result[2] = glm::vec4(m[0][3] - m[0][1], m[1][3] - m[1][1], m[2][3] - m[2][1],
+                        m[3][3] - m[3][1]);
+  // bottom
+  result[3] = glm::vec4(m[0][3] + m[0][1], m[1][3] + m[1][1], m[2][3] + m[2][1],
+                        m[3][3] + m[3][1]);
+  // far
+  result[4] = glm::vec4(m[0][2], m[1][2], m[2][2], m[3][2]);
+  // near
+  result[5] = glm::vec4(m[0][3] - m[0][2], m[1][3] - m[1][2], m[2][3] - m[2][2],
+                        m[3][3] - m[3][2]);
+  return result;
 }
 
 void Camera::resizeCameraViewport(int width, int height) {
@@ -44,7 +65,7 @@ void Camera::computeViewMatrix() {
   view = glm::mat4(1.0f);
   view = glm::rotate(view, angleX / 180.f * PI, glm::vec3(1.0f, 0.0f, 0.0f));
   view = glm::rotate(view, angleY / 180.f * PI, glm::vec3(0.0f, 1.0f, 0.0f));
-  view = glm::translate(view, pos + glm::vec3(0.0f, distance, 0.0f));
+  view = glm::translate(view, pos);
 }
 
 glm::mat4 &Camera::getProjectionMatrix() { return projection; }

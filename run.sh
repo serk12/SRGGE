@@ -14,6 +14,8 @@ DEFAULT_MODEL="models/bunny.ply"
 INPUT_FILE=$DEFAULT_TAILMAP
 LOD_FLAG=""
 LOD_LEVEL=""
+CULLING_FLAG=""
+CULLING_LEVEL=""
 COMMAND=$1
 shift
 
@@ -25,7 +27,7 @@ do
         +(wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
         INPUT_FILE="models/${key}.ply"
         ;;
-        +(small_museum))
+        +(small_museum|big_grid))
         INPUT_FILE="resources/${key}.txt"
         ;;
         --LOD|--calc-LOD)
@@ -33,10 +35,13 @@ do
             INPUT_FILE=$DEFAULT_MODEL
         fi
         LOD_FLAG="--calc-LOD"
-        LOD_LEVEL=4
-        ;;
-        0|1|2|3|4)
+        shift
         LOD_LEVEL=$1
+        ;;
+        --CULLING|-c|--cull)
+        CULLING_FLAG="--CULLING"
+        shift
+        CULLING_LEVEL=$1
         ;;
     esac
     shift
@@ -73,6 +78,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL
+    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL
     ;;
 esac

@@ -8,25 +8,25 @@
 // If a key is pressed this callback is called
 
 void Museum::keyboardDownCallback(unsigned char key, int x, int y) {
-  Application::instance().keyEvent(key, -1, true);
+  Application::instance().keyEvent(key, Application::UNDEFINED_KEY, true);
 }
 
 // If a key is released this callback is called
 
 void Museum::keyboardUpCallback(unsigned char key, int x, int y) {
-  Application::instance().keyEvent(key, -1, false);
+  Application::instance().keyEvent(key, Application::UNDEFINED_KEY, false);
 }
 
 // If a special key is pressed this callback is called
 
 void Museum::specialDownCallback(int key, int x, int y) {
-  Application::instance().keyEvent(-1, key, false);
+  Application::instance().keyEvent(Application::UNDEFINED_KEY, key, false);
 }
 
 // If a special key is released this callback is called
 
 void Museum::specialUpCallback(int key, int x, int y) {
-  Application::instance().keyEvent(-1, key, true);
+  Application::instance().keyEvent(Application::UNDEFINED_KEY, key, true);
 }
 
 // Same for changes in mouse cursor position

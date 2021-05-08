@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 #include <list>
 #include <utility>
-#include <variant>
 #include <vector>
 
 enum Behaviour { Singleton, Discrete };
