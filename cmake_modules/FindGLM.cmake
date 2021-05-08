@@ -50,7 +50,7 @@ IF(GLM_ROOT_DIR)
 ENDIF(GLM_ROOT_DIR)
 
 # locate header
-FIND_PATH(GLM_INCLUDE_DIR "glm/glm.hpp"
+FIND_PATH(GLM_INCLUDE_DIR "libs/glm/glm.hpp"
     PATHS ${_glm_HEADER_SEARCH_DIRS})
 
 INCLUDE(FindPackageHandleStandardArgs)
@@ -62,5 +62,3 @@ IF(GLM_FOUND)
 
     MESSAGE(STATUS "GLM_INCLUDE_DIR = ${GLM_INCLUDE_DIR}")
 ENDIF(GLM_FOUND)
-
-

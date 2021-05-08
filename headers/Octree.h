@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <utility>
+#include <vector>
 
 typedef std::pair<glm::vec3, int> Vertex;
 
@@ -14,7 +15,7 @@ public:
   void setQtty(unsigned int qtty);
 
 private:
-  std::vector<Octee> childrens;
+  std::vector<Octree> childrens;
   std::vector<Vertex> elements;
   glm::vec3 size;
   unsigned int qtty;
