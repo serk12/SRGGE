@@ -24,14 +24,13 @@ protected:
   void displaceCamera(const glm::vec3 &disp);
 
 protected:
-  float angleX, angleY, distance; // Camera parameters
+  float angleX, angleY; // Camera parameters
+  glm::vec3 pos;
 
 private:
   void computeViewMatrix();
 
 private:
-  glm::vec3 pos;
-  float rangeDistanceCamera[2];
   glm::mat4 projection, view; // OpenGL matrices
 };
 

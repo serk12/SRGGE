@@ -11,6 +11,7 @@
 class Application {
 public:
   inline static int UNDEFINED_KEY = -1;
+  inline static CullingMethod CULLING_POLICY = CullingMethod::NONE;
   Application() {}
 
   static Application &instance() {

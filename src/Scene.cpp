@@ -18,7 +18,8 @@ Scene::~Scene() {
   meshes.clear();
 }
 
-void Scene::init(const std::string &fn) {
+void Scene::init(const std::string &fn, CullingMethod cm) {
+  cullingPolicy = cm;
   bPolygonFill = true;
   filename = fn;
   basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");

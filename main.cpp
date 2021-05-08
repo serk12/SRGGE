@@ -2,9 +2,19 @@
 #include <cstring>
 
 enum ApplicationType { MUSEUM };
+static const char *CULLING_FLAG = "--CULLING";
 
 int main(int argc, char **argv) {
   ApplicationType application = ApplicationType::MUSEUM;
+  for (unsigned int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], CULLING_FLAG) == 0) {
+      if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '3') {
+        Application::CULLING_POLICY = CullingMethod(std::stoi(argv[i + 1]));
+      } else {
+        std::cout << "ERROR culling flag" << std::endl;
+      }
+    }
+  }
   switch (application) {
   case ApplicationType::MUSEUM:
     new Museum(argc, argv);

@@ -11,6 +11,8 @@ cd "$parent_path"
 MODEL="resources/big_grid.txt"
 LOD_FLAG=""
 LOD_LEVEL=""
+CULLING_FLAG=""
+CULLING_LEVEL=""
 COMMAND=$1
 shift
 
@@ -25,12 +27,15 @@ do
         +(small_museum|big_grid))
         MODEL="resources/${key}.txt"
         ;;
-        --LOD|--calc-LOD)
+        --LOD|--calc-LOD|-l)
         LOD_FLAG="--calc-LOD"
-        LOD_LEVEL=4
-        ;;
-        0|1|2|3|4)
+        shift
         LOD_LEVEL=$1
+        ;;
+        --CULLING|-c|--cull)
+        CULLING_FLAG="--CULLING"
+        shift
+        CULLING_LEVEL=$1
         ;;
     esac
     shift
@@ -67,6 +72,6 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    ./BaseCode $MODEL $LOD_FLAG $LOD_LEVEL
+    ./BaseCode $MODEL $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL
     ;;
 esac

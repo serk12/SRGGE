@@ -14,8 +14,6 @@ void Camera::init(float initAngleX, float initAngleY) {
   pos = glm::vec3(0.0f, 0.8f, 0.0f);
   angleX = initAngleX;
   angleY = initAngleY;
-  rangeDistanceCamera[0] = 1.0f;
-  rangeDistanceCamera[1] = 3.0f;
   computeViewMatrix();
 }
 
@@ -67,7 +65,7 @@ void Camera::computeViewMatrix() {
   view = glm::mat4(1.0f);
   view = glm::rotate(view, angleX / 180.f * PI, glm::vec3(1.0f, 0.0f, 0.0f));
   view = glm::rotate(view, angleY / 180.f * PI, glm::vec3(0.0f, 1.0f, 0.0f));
-  view = glm::translate(view, pos + glm::vec3(0.0f, distance, 0.0f));
+  view = glm::translate(view, pos);
 }
 
 glm::mat4 &Camera::getProjectionMatrix() { return projection; }
