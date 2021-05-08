@@ -16,7 +16,7 @@ public:
 
   void initShaders(const std::string &vertShader,
                    const std::string &fragShader);
-  GLuint getProgram();
+  GLuint getProgram() const;
   void addShader(const Shader &shader);
   void bindFragmentOutput(const string &outputName);
   GLint bindVertexAttribute(const string &attribName, GLint size,

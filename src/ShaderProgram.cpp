@@ -9,7 +9,7 @@ ShaderProgram::ShaderProgram() {
 
 void ShaderProgram::init() { programId = glCreateProgram(); }
 
-GLuint ShaderProgram::getProgram() { return programId; }
+GLuint ShaderProgram::getProgram() const { return programId; }
 
 void ShaderProgram::initShaders(const std::string &vs, const std::string &fs) {
   Shader vShader, fShader;

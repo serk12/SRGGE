@@ -33,6 +33,7 @@ public:
         Debug::print(c, id);
       }
     }
+    std::cout << "END CHILD" << std::endl;
   }
 };
 

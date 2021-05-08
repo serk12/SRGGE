@@ -2,6 +2,7 @@
 #include "TextRender.h"
 #include <ft2build.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include FT_FREETYPE_H
 
 bool TextRender::init() {
@@ -12,14 +13,14 @@ bool TextRender::init() {
   if (FT_Init_FreeType(&ft)) {
     std::cout << "ERROR::FREETYPE: Could not init FreeType Library"
               << std::endl;
-    return -1;
+    return false;
   }
 
   // load font as face
   FT_Face face;
   if (FT_New_Face(ft, "resources/arial.ttf", 0, &face)) {
     std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-    return -1;
+    return false;
   } else {
     // set size to load glyphs as
     FT_Set_Pixel_Sizes(face, 0, size);
@@ -81,6 +82,7 @@ void TextRender::renderText(std::string text, float x, float y, float scale,
       glm::value_ptr(projection));
   glUniform3f(glGetUniformLocation(textProgram.getProgram(), "textColor"),
               color.x, color.y, color.z);
+
   glActiveTexture(GL_TEXTURE0);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(VAO);
@@ -97,11 +99,9 @@ void TextRender::renderText(std::string text, float x, float y, float scale,
     float h = ch.size.y * scale;
     // update VBO for each character
     float vertices[6][4] = {
-        {xpos, ypos + h, 0.0f, 0.0f},    {xpos, ypos, 0.0f, 1.0f},
-        {xpos + w, ypos, 1.0f, 1.0f},
-
-        {xpos, ypos + h, 0.0f, 0.0f},    {xpos + w, ypos, 1.0f, 1.0f},
-        {xpos + w, ypos + h, 1.0f, 0.0f}};
+        {xpos, ypos + h, 0.0f, 0.0f}, {xpos, ypos, 0.0f, 1.0f},
+        {xpos + w, ypos, 1.0f, 1.0f}, {xpos, ypos + h, 0.0f, 0.0f},
+        {xpos + w, ypos, 1.0f, 1.0f}, {xpos + w, ypos + h, 1.0f, 0.0f}};
     // render glyph texture over quad
     glBindTexture(GL_TEXTURE_2D, ch.textureID);
     // update content of VBO memory
