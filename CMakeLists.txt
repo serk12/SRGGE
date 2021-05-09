@@ -14,8 +14,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17")
 execute_process(COMMAND ln -s ../shaders)
 execute_process(COMMAND ln -s ../resources)
+execute_process(COMMAND ln -s ../LOD/models/wall.ply ../../models)
+execute_process(COMMAND ln -s ../LOD/models/ground.ply ../../models)
 execute_process(COMMAND ln -s ../../models)
-execute_process(COMMAND ln -s ../models/*.ply )
 
 set(appName BaseCode)
 
