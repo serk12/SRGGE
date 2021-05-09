@@ -11,6 +11,19 @@ using namespace std;
 
 // Class TriangleMesh renders a very simple room with textures
 
+struct float3 {
+  float x, y, z;
+  float3() { x = y = z = 0; }
+  float3(glm::vec3 v) {
+    x = v.x;
+    y = v.y;
+    z = v.z;
+  }
+};
+struct uint3 {
+  uint32_t x, y, z;
+};
+
 class TriangleMesh {
 public:
   TriangleMesh(glm::vec3 position = {0, 0, 0});
@@ -28,10 +41,15 @@ public:
   float getRadius() const;
 
   vector<glm::vec3> getVertices() const;
+  vector<float3> exportVertices() const;
+  vector<uint3> exportTriangles() const;
+  int getVerticesSize() const;
+  int getTriangleSize() const;
 
 private:
   vector<glm::vec3> vertices;
   vector<int> triangles;
+
   glm::mat4 model;
   glm::vec3 pos, min, max;
   float r;

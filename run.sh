@@ -26,9 +26,11 @@ do
     case $key in
         +(wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
         INPUT_FILE="models/${key}.ply"
+        DEFAULT_MODEL="models/${key}.ply"
         ;;
         +(small_museum|big_grid))
         INPUT_FILE="resources/${key}.txt"
+        DEFAULT_TAILMAP="resources/${key}.txt"
         ;;
         --LOD|--calc-LOD)
         if [[ $INPUT_FILE == *".txt" ]]; then
@@ -78,6 +80,7 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
+    echo $INPUT_FILE
     ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL
     ;;
 esac
