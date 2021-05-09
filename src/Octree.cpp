@@ -13,7 +13,7 @@ Octree::Octree() {
   octreeInfo = new OctreeInfo;
   octreeInfo->behaviour = DEFAULT_BEHAVIOUR;
   octreeInfo->max = octreeInfo->min = glm::vec3(0.0f);
-  octreeInfo->dis = 0.0f;
+  octreeInfo->dis = 0.0;
   size = pos = glm::vec3(0);
   qtty = 0;
 }
@@ -94,6 +94,10 @@ bool Octree::add(const glm::vec3 &vertice, const int index) {
   add(vertex);
   return true;
 }
+
+glm::vec3 Octree::getPoss() const { return pos + octreeInfo->min; }
+glm::vec3 Octree::getSize() const { return size; }
+float Octree::getDis() const { return octreeInfo->dis; }
 
 bool Octree::needsDivision(const glm::vec3 &vertice) const {
   switch (octreeInfo->behaviour) {

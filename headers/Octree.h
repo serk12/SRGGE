@@ -30,6 +30,10 @@ public:
   glm::vec3 getElementVec(int i) const;
   int getElementIndex(int i) const;
   int getQttyElements() const;
+  glm::vec3 getPoss() const;
+  glm::vec3 getSize() const;
+  float getDis() const;
+
   int getQtty() const;
   const Octree &getChildren(int i) const;
 

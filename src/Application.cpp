@@ -17,8 +17,7 @@ void Application::init(const std::string &filename) {
     keys[i] = false;
     specialKeys[i] = false;
   }
-  mouseButtons[0] = false;
-  mouseButtons[1] = false;
+  mouseButtons[0] = mouseButtons[1] = mouseButtons[2] = false;
   lastMousePos = glm::ivec2(-1, -1);
 }
 

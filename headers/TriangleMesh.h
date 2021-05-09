@@ -30,7 +30,7 @@ public:
 
   void addVertex(const glm::vec3 &position);
   void addTriangle(int v0, int v1, int v2);
-  void buildCube();
+  void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
 
   void sendToOpenGL(ShaderProgram &program);
   void render() const;

@@ -29,9 +29,30 @@ void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
   mf.write(outstream_binary, true);
 }
 
+void cubize(const Octree &octree, TriangleMesh &mesh, int level,
+            int maxLevel = -1) {
+  if (octree.getQttyElements() > 0) {
+    for (unsigned int i = 0; i < octree.getQttyElements(); ++i) {
+      glm::vec3 pos = octree.getElementVec(i);
+      glm::vec3 size = octree.getSize();
+      mesh.buildCube(pos, size);
+    }
+  } else if (maxLevel == -1 || level < maxLevel) {
+    for (unsigned int i = 0; i < Octree::VECT_SIZE; ++i) {
+      const Octree c = octree.getChildren(i);
+      if (c.getQtty() >= 1) {
+        cubize(c, mesh, level + 1, maxLevel);
+      }
+    }
+  }
+}
+
 CalcLOD::CalcLOD(int argc, char **argv) {
   TriangleMesh *mesh = new TriangleMesh();
   bool bSuccess = PLYReader::readMesh(std::string(argv[1]), *mesh);
   Octree octree(mesh->getVertices());
-  modelToPly("testing", *mesh);
+  TriangleMesh *new_mesh = new TriangleMesh();
+  cubize(octree, *new_mesh, 0, -1);
+  modelToPly("testing", *new_mesh);
+  // Debug::print(octree);
 }

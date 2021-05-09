@@ -20,17 +20,17 @@ public:
     }
   }
 
-  static void print(const Octree &o, int index = 0) {
+  static void print(const Octree &o, int level = 0) {
     std::cout << "QTTY: " << o.getQtty() << " ELEMENTS: " << o.getQttyElements()
               << std::endl;
 
     for (int i = 0; i < Octree::VECT_SIZE; ++i) {
-      int id = index * Octree::VECT_SIZE + i;
       const Octree c = o.getChildren(i);
-      std::cout << "CHILD: " << i << " QTTY: " << c.getQtty()
+      std::cout << "LEVEL: " << level << " CHILD: " << i
+                << " QTTY: " << c.getQtty()
                 << " ELEMENTS:" << c.getQttyElements() << std::endl;
       if (c.getQtty() > 1) {
-        Debug::print(c, id);
+        Debug::print(c, level + 1);
       }
     }
     std::cout << "END CHILD" << std::endl;

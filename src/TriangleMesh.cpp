@@ -53,7 +53,7 @@ void TriangleMesh::addTriangle(int v0, int v1, int v2) {
   triangles.push_back(v2);
 }
 
-void TriangleMesh::buildCube() {
+void TriangleMesh::buildCube(glm::vec3 pos, glm::vec3 size) {
   float vertices[] = {-1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1,
                       -1, -1, 1,  1, -1, 1,  1, 1, 1,  -1, 1, 1};
 
@@ -61,12 +61,14 @@ void TriangleMesh::buildCube() {
                  1, 2, 6, 6, 5, 1, 0, 1, 4, 5, 4, 1, 2, 3, 7, 7, 6, 2};
 
   int i;
-
+  int current = this->vertices.size();
   for (i = 0; i < 8; i += 1)
-    addVertex(0.5f * glm::vec3(vertices[3 * i], vertices[3 * i + 1],
-                               vertices[3 * i + 2]));
+    addVertex(glm::vec3(pos.x + 0.5f * size.x * vertices[3 * i],
+                        pos.y + 0.5f * size.y * vertices[3 * i + 1],
+                        pos.z + 0.5f * size.z * vertices[3 * i + 2]));
   for (i = 0; i < 12; i++)
-    addTriangle(faces[3 * i], faces[3 * i + 1], faces[3 * i + 2]);
+    addTriangle(current + faces[3 * i], current + faces[3 * i + 1],
+                current + faces[3 * i + 2]);
 }
 
 void TriangleMesh::sendToOpenGL(ShaderProgram &program) {
