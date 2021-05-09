@@ -32,11 +32,11 @@ void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
 void cubize(const Octree &octree, TriangleMesh &mesh, int level,
             int maxLevel = -1) {
   if (octree.getQttyElements() > 0) {
-    for (unsigned int i = 0; i < octree.getQttyElements(); ++i) {
-      glm::vec3 pos = octree.getElementVec(i);
-      glm::vec3 size = octree.getSize();
-      mesh.buildCube(pos, size);
-    }
+    // for (unsigned int i = 0; i < octree.getQttyElements(); ++i) {
+    glm::vec3 pos = octree.getPoss();
+    glm::vec3 size = octree.getSize();
+    mesh.buildCube(pos, size);
+    // }
   } else if (maxLevel == -1 || level < maxLevel) {
     for (unsigned int i = 0; i < Octree::VECT_SIZE; ++i) {
       const Octree c = octree.getChildren(i);
@@ -54,5 +54,5 @@ CalcLOD::CalcLOD(int argc, char **argv) {
   TriangleMesh *new_mesh = new TriangleMesh();
   cubize(octree, *new_mesh, 0, -1);
   modelToPly("testing", *new_mesh);
-  // Debug::print(octree);
+  Debug::print(octree);
 }

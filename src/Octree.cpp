@@ -1,3 +1,4 @@
+#include "Debug.h"
 #include "Octree.h"
 #include <iostream>
 
@@ -49,10 +50,13 @@ Octree::Octree(const std::vector<glm::vec3> &vertices) : Octree() {
   }
   octreeInfo->dis = m;
   size = glm::vec3(m);
-
+  Debug::print(pos);
+  std::cout << std::endl;
   for (unsigned int i = 0; i < vertices.size(); ++i) {
     add(vertices[i], i);
   }
+  Debug::print(pos);
+  std::cout << std::endl;
 }
 
 bool Octree::checkError(const glm::vec3 &vertex) const {
@@ -73,8 +77,8 @@ glm::ivec3 Octree::getDsize() const { return size / octreeInfo->dis; }
 int Octree::vertexToIndex(const glm::vec3 &vertex) const {
   glm::ivec3 d_vertex = (vertex - octreeInfo->min) / octreeInfo->dis;
   d_vertex = (d_vertex - getDpos()) * 2 - getDsize();
-  return (d_vertex[2] < 0.0f) * 4 + (d_vertex[1] < 0.0f) * 2 +
-         (d_vertex[0] < 0.0f);
+  return (d_vertex[2] >= 0.0f) * 4 + (d_vertex[1] >= 0.0f) * 2 +
+         (d_vertex[0] >= 0.0f);
 }
 
 glm::vec3 Octree::indexToVertex(int i) const {
@@ -86,16 +90,7 @@ glm::vec3 Octree::indexToVertex(int i) const {
   return result;
 }
 
-bool Octree::add(const glm::vec3 &vertice, const int index) {
-  if (!checkError(vertice))
-    return false;
-  ++octreeInfo->qtty;
-  Vertex vertex = {vertice, index};
-  add(vertex);
-  return true;
-}
-
-glm::vec3 Octree::getPoss() const { return pos + octreeInfo->min; }
+glm::vec3 Octree::getPoss() const { return pos; }
 glm::vec3 Octree::getSize() const { return size; }
 float Octree::getDis() const { return octreeInfo->dis; }
 
@@ -107,6 +102,15 @@ bool Octree::needsDivision(const glm::vec3 &vertice) const {
   case Behaviour::Discrete:
     return vertexToIndex(vertice) > 0;
   }
+}
+
+bool Octree::add(const glm::vec3 &vertice, const int index) {
+  if (!checkError(vertice))
+    return false;
+  ++octreeInfo->qtty;
+  Vertex vertex = {vertice, index};
+  add(vertex);
+  return true;
 }
 
 void Octree::add(Vertex &vertex) {

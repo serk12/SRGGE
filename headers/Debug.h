@@ -20,15 +20,27 @@ public:
     }
   }
 
+  static void print(const glm::vec3 &v) {
+    std::cout << v.x << " " << v.y << " " << v.z;
+  }
+
   static void print(const Octree &o, int level = 0) {
     std::cout << "QTTY: " << o.getQtty() << " ELEMENTS: " << o.getQttyElements()
-              << std::endl;
+              << " SIZE: ";
+    print(o.getSize());
+    std::cout << " POSS ";
+    print(o.getPoss());
+    std::cout << std::endl;
 
     for (int i = 0; i < Octree::VECT_SIZE; ++i) {
       const Octree c = o.getChildren(i);
       std::cout << "LEVEL: " << level << " CHILD: " << i
                 << " QTTY: " << c.getQtty()
-                << " ELEMENTS:" << c.getQttyElements() << std::endl;
+                << " ELEMENTS:" << c.getQttyElements() << " SIZE: ";
+      print(c.getSize());
+      std::cout << " POSS: ";
+      print(c.getPoss());
+      std::cout << std::endl;
       if (c.getQtty() > 1) {
         Debug::print(c, level + 1);
       }

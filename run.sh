@@ -24,7 +24,7 @@ while [[ $# -gt 0 ]]
 do
     key="$1"
     case $key in
-        +(wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
+        +(cosa|wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
         INPUT_FILE="models/${key}.ply"
         DEFAULT_MODEL="models/${key}.ply"
         ;;
