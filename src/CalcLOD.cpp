@@ -30,18 +30,23 @@ void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
 }
 
 void cubize(const Octree &octree, TriangleMesh &mesh, int level,
-            int maxLevel = -1) {
-  if (octree.getQttyElements() > 0) {
-    // for (unsigned int i = 0; i < octree.getQttyElements(); ++i) {
+            int maxLevel = -1, bool showCubes = false) {
+  if (showCubes) {
     glm::vec3 pos = octree.getPoss();
     glm::vec3 size = octree.getSize();
     mesh.buildCube(pos, size);
-    // }
+  }
+  if (octree.getQttyElements() > 0) {
+    if (!showCubes) {
+      glm::vec3 pos = octree.getPoss();
+      glm::vec3 size = octree.getSize();
+      mesh.buildCube(pos, size);
+    }
   } else if (maxLevel == -1 || level < maxLevel) {
     for (unsigned int i = 0; i < Octree::VECT_SIZE; ++i) {
       const Octree c = octree.getChildren(i);
       if (c.getQtty() >= 1) {
-        cubize(c, mesh, level + 1, maxLevel);
+        cubize(c, mesh, level + 1, maxLevel, showCubes);
       }
     }
   }
@@ -52,7 +57,7 @@ CalcLOD::CalcLOD(int argc, char **argv) {
   bool bSuccess = PLYReader::readMesh(std::string(argv[1]), *mesh);
   Octree octree(mesh->getVertices());
   TriangleMesh *new_mesh = new TriangleMesh();
-  cubize(octree, *new_mesh, 0, -1);
+  cubize(octree, *new_mesh, 0, -1, false);
   modelToPly("testing", *new_mesh);
   Debug::print(octree);
 }
