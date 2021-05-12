@@ -11,11 +11,19 @@ int main(int argc, char **argv) {
   for (unsigned int i = 0; i < argc; ++i) {
     if (strcmp(argv[i], LOD_FLAG) == 0) {
       application = ApplicationType::LOD;
+      if (argc >= i + 1) {
+        CalcLOD::LOD_LEVEL = std::stoi(argv[i + 1]);
+      } else {
+        std::cout << "ERROR LOD flag" << std::endl;
+        break;
+      }
+
     } else if (strcmp(argv[i], CULLING_FLAG) == 0) {
       if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '3') {
         Application::CULLING_POLICY = CullingMethod(std::stoi(argv[i + 1]));
       } else {
         std::cout << "ERROR culling flag" << std::endl;
+        break;
       }
     }
   }

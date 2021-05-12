@@ -17,7 +17,7 @@ struct OctreeInfo {
   Behaviour behaviour;
   glm::vec3 max, min;
   float dis;
-  int qtty;
+  int qtty, levels;
 };
 
 class Octree {
@@ -25,7 +25,7 @@ public:
   Octree();
   ~Octree();
   Octree(const std::vector<glm::vec3> &vertices);
-  Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s);
+  Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s, int l);
   bool add(const glm::vec3 &vertice, const int index);
   glm::vec3 getElementVec(int i) const;
   int getElementIndex(int i) const;
@@ -33,8 +33,11 @@ public:
   glm::vec3 getPoss() const;
   glm::vec3 getSize() const;
   float getDis() const;
-
   int getQtty() const;
+  int getLevel() const;
+  int getMaxLevel() const;
+  Octree cut() const;
+
   const Octree &getChildren(int i) const;
 
   inline static const int VECT_SIZE = 8;
@@ -54,7 +57,7 @@ private:
   std::vector<Vertex> elements;
   OctreeInfo *octreeInfo;
   glm::vec3 pos, size;
-  int qtty;
+  int qtty, level;
 };
 
 #endif //_OCTEE_INCLUDE

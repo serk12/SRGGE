@@ -15,11 +15,13 @@ Octree::Octree() {
   octreeInfo->behaviour = DEFAULT_BEHAVIOUR;
   octreeInfo->max = octreeInfo->min = glm::vec3(0.0f);
   octreeInfo->dis = 0.0;
+  octreeInfo->qtty = 0;
+  octreeInfo->levels = 1;
   size = pos = glm::vec3(0);
-  qtty = 0;
+  qtty = level = 0;
 }
 
-Octree::Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s) {
+Octree::Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s, int l) {
   octreeInfo = oi;
   size = s / 2.0f;
   if (s[0] < octreeInfo->dis)
@@ -27,6 +29,9 @@ Octree::Octree(OctreeInfo *oi, int i, glm::vec3 p, glm::vec3 s) {
 
   pos = p + (size * indexToVertex(i));
   qtty = 0;
+  level = l + 1;
+  if (octreeInfo->levels < level)
+    octreeInfo->levels = level;
 }
 
 Octree::Octree(const std::vector<glm::vec3> &vertices) : Octree() {
@@ -50,13 +55,9 @@ Octree::Octree(const std::vector<glm::vec3> &vertices) : Octree() {
   }
   octreeInfo->dis = m;
   size = glm::vec3(m);
-  Debug::print(pos);
-  std::cout << std::endl;
   for (unsigned int i = 0; i < vertices.size(); ++i) {
     add(vertices[i], i);
   }
-  Debug::print(pos);
-  std::cout << std::endl;
 }
 
 bool Octree::checkError(const glm::vec3 &vertex) const {
@@ -73,6 +74,8 @@ bool Octree::checkError(const glm::vec3 &vertex) const {
 
 glm::ivec3 Octree::getDpos() const { return pos / octreeInfo->dis; }
 glm::ivec3 Octree::getDsize() const { return size / octreeInfo->dis; }
+int Octree::getLevel() const { return level; }
+int Octree::getMaxLevel() const { return octreeInfo->levels; }
 
 int Octree::vertexToIndex(const glm::vec3 &vertex) const {
   glm::ivec3 d_vertex = (vertex - octreeInfo->min) / octreeInfo->dis;
@@ -98,7 +101,8 @@ bool Octree::needsDivision(const glm::vec3 &vertice) const {
   switch (octreeInfo->behaviour) {
   default:
   case Behaviour::Singleton:
-    return qtty != 0;
+    return qtty != 0 &&
+           glm::distance(vertice, elements[0].vertex) > 0.0000000001f;
   case Behaviour::Discrete:
     return vertexToIndex(vertice) > 0;
   }
@@ -122,7 +126,7 @@ void Octree::add(Vertex &vertex) {
       int i = vertexToIndex(vertex.vertex);
       childrens = std::vector<Octree>(VECT_SIZE);
       for (unsigned int i = 0; i < VECT_SIZE; ++i) {
-        childrens[i] = Octree(octreeInfo, i, pos, size);
+        childrens[i] = Octree(octreeInfo, i, pos, size, level);
       }
       childrens[i].add(vertex);
       for (Vertex v : elements) {

@@ -24,7 +24,7 @@ public:
     std::cout << v.x << " " << v.y << " " << v.z;
   }
 
-  static void print(const Octree &o, int level = 0) {
+  static void print(const Octree &o) {
     std::cout << "QTTY: " << o.getQtty() << " ELEMENTS: " << o.getQttyElements()
               << " SIZE: ";
     print(o.getSize());
@@ -34,7 +34,7 @@ public:
 
     for (int i = 0; i < Octree::VECT_SIZE; ++i) {
       const Octree c = o.getChildren(i);
-      std::cout << "LEVEL: " << level << " CHILD: " << i
+      std::cout << "LEVEL: " << c.getLevel() << " CHILD: " << i
                 << " QTTY: " << c.getQtty()
                 << " ELEMENTS:" << c.getQttyElements() << " SIZE: ";
       print(c.getSize());
@@ -42,10 +42,11 @@ public:
       print(c.getPoss());
       std::cout << std::endl;
       if (c.getQtty() > 1) {
-        Debug::print(c, level + 1);
+        Debug::print(c);
       }
     }
     std::cout << "END CHILD" << std::endl;
+    std::cout << "Max level: " << o.getMaxLevel() << std::endl;
   }
 };
 

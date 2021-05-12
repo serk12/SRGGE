@@ -5,6 +5,7 @@
 #include "TriangleMesh.h"
 
 #include <tinyply.h>
+#include <vector>
 using namespace tinyply;
 
 void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
@@ -52,12 +53,28 @@ void cubize(const Octree &octree, TriangleMesh &mesh, int level,
   }
 }
 
+void simplify(const Octree &octree, TriangleMesh &mesh, int level) {
+  Octree octreeCut = octree.cut(level);
+}
+
 CalcLOD::CalcLOD(int argc, char **argv) {
   TriangleMesh *mesh = new TriangleMesh();
   bool bSuccess = PLYReader::readMesh(std::string(argv[1]), *mesh);
+  if (not bSuccess) {
+    std::cerr << "error loading model" << std::endl;
+    return;
+  }
+
   Octree octree(mesh->getVertices());
+
   TriangleMesh *new_mesh = new TriangleMesh();
-  cubize(octree, *new_mesh, 0, -1, false);
+  if (LOD_LEVEL == 0) {
+    Debug::print(octree);
+    cubize(octree, *new_mesh, 0, -1, false);
+  } else if (LOD_LEVEL <= octree.getMaxLevel()) {
+    simplify(octree, *new_mesh, LOD_LEVEL);
+  } else {
+    cerr << "Error LOD > octree max level" << std::endl;
+  }
   modelToPly("testing", *new_mesh);
-  Debug::print(octree);
 }

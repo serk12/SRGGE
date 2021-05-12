@@ -25,8 +25,9 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Freetype REQUIRED)
+# ^ install it from https://www.freetype.org/download.html
 find_package(tinyply REQUIRED)
-# ^ follow this: https://github.com/markcox80/tinyply-cmake in libs/tinyply (typo : mkdir ./tmp/build and no cd )
+# ^ follow this: https://github.com/markcox80/tinyply-cmake in libs/tinyply (using: mkdir ./tmp/build and not cd )
 
 include_directories("${CMAKE_SOURCE_DIR}/headers")
 include_directories(${OPENGL_INCLUDE_DIRS})
