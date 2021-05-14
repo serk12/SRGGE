@@ -47,12 +47,14 @@ void Scene::loadMesh() {
 }
 
 void Scene::loadMesh(const std::string &fn, glm::vec3 pos) {
+  Debug::print(pos);
   TriangleMesh *mesh = new TriangleMesh(pos);
-  meshes.push_front(mesh);
+  meshes.push_back(mesh);
   PLYReader reader;
   bool bSuccess = reader.readMesh(fn, *mesh);
-  if (bSuccess)
+  if (bSuccess) {
     mesh->sendToOpenGL(basicProgram);
+  }
 }
 
 void Scene::loadTileMap() {

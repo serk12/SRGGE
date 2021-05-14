@@ -36,7 +36,7 @@ public:
   int getQtty() const;
   int getLevel() const;
   int getMaxLevel() const;
-  Octree cut() const;
+  Octree cut(int level) const;
 
   const Octree &getChildren(int i) const;
 

@@ -60,6 +60,8 @@ Octree::Octree(const std::vector<glm::vec3> &vertices) : Octree() {
   }
 }
 
+Octree Octree::cut(int level) const { return Octree(); }
+
 bool Octree::checkError(const glm::vec3 &vertex) const {
   for (unsigned int i = 0; i < DIM_SIZE; ++i) {
     if (vertex[i] > octreeInfo->max[i]) {

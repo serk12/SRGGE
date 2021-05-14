@@ -20,8 +20,12 @@ public:
     }
   }
 
+  static void print(const float &f) {
+    std::cout << "float: " << f << std::endl;
+  }
+
   static void print(const glm::vec3 &v) {
-    std::cout << v.x << " " << v.y << " " << v.z;
+    std::cout << "vec3: " << v.x << " " << v.y << " " << v.z << std::endl;
   }
 
   static void print(const Octree &o) {

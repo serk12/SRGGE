@@ -34,6 +34,7 @@ vector<uint3> TriangleMesh::exportTriangles() const {
 }
 
 TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos) {
+  bbMax = bbMin = glm::vec3(0.0f);
   model = glm::mat4(1.0f);
   model = glm::translate(model, pos);
 }
@@ -41,11 +42,32 @@ TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos) {
 glm::mat4 &TriangleMesh::getModelMatrix() { return model; }
 
 void TriangleMesh::addVertex(const glm::vec3 &position) {
+  if (vertices.size() == 0) {
+    bbMax = bbMin = position;
+  } else {
+    for (unsigned int i = 0; i < 3; ++i) {
+      if (bbMax[i] < position[i])
+        bbMax[i] = position[i];
+      if (bbMin[i] > position[i])
+        bbMin[i] = position[i];
+    }
+  }
   vertices.push_back(position);
 }
 
 glm::vec3 TriangleMesh::getPoss() const { return pos; }
-float TriangleMesh::getRadius() const { return 1.0f; }
+
+BoundingBox TriangleMesh::getBoundingBox() const {
+  BoundingBox bb;
+  bb.pos = pos;
+  bb.size = bbMax - bbMin;
+  return bb;
+}
+
+float TriangleMesh::getRadius() const {
+  glm::vec3 r3 = bbMax - bbMin;
+  return glm::length(r3);
+}
 
 void TriangleMesh::addTriangle(int v0, int v1, int v2) {
   triangles.push_back(v0);

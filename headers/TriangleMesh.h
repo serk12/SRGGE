@@ -24,6 +24,10 @@ struct uint3 {
   uint32_t x, y, z;
 };
 
+struct BoundingBox {
+  glm::vec3 pos, size;
+};
+
 class TriangleMesh {
 public:
   TriangleMesh(glm::vec3 position = {0, 0, 0});
@@ -38,6 +42,8 @@ public:
 
   glm::mat4 &getModelMatrix();
   glm::vec3 getPoss() const;
+
+  BoundingBox getBoundingBox() const;
   float getRadius() const;
 
   vector<glm::vec3> getVertices() const;
@@ -51,7 +57,7 @@ private:
   vector<int> triangles;
 
   glm::mat4 model;
-  glm::vec3 pos, min, max;
+  glm::vec3 pos, bbMin, bbMax;
   float r;
 
   GLuint vao;
