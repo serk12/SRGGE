@@ -29,14 +29,16 @@ public:
   bool add(const glm::vec3 &vertice, const int index);
   glm::vec3 getElementVec(int i) const;
   int getElementIndex(int i) const;
+  std::vector<Vertex> getAllElements() const;
   int getQttyElements() const;
+  int getQttyChildrens() const;
   glm::vec3 getPoss() const;
   glm::vec3 getSize() const;
   float getDis() const;
   int getQtty() const;
   int getLevel() const;
   int getMaxLevel() const;
-  Octree cut() const;
+  void cut(int level);
 
   const Octree &getChildren(int i) const;
 

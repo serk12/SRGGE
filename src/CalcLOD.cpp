@@ -53,8 +53,21 @@ void cubize(const Octree &octree, TriangleMesh &mesh, int level,
   }
 }
 
-void simplify(const Octree &octree, TriangleMesh &mesh, int level) {
-  Octree octreeCut = octree.cut(level);
+void simplify(const Octree &octree, TriangleMesh &mesh, int actualLevel,
+              int level) {
+  if (octree.getQttyChildrens() > 0 && actualLevel < level) {
+    for (unsigned int i = 0; i < Octree::VECT_SIZE; ++i) {
+      simplify(octree.getChildren(i), mesh, actualLevel + 1, level);
+    }
+  } else if (octree.getQttyElements() > 0) {
+    int size = octree.getQttyElements();
+    glm::vec3 mean(0.0f);
+    for (unsigned int i = 0; i < size; ++i) {
+      mean += octree.getElementVec(i);
+    }
+    mean /= size;
+    mesh.buildCube(mean, octree.getSize());
+  }
 }
 
 CalcLOD::CalcLOD(int argc, char **argv) {
@@ -68,11 +81,12 @@ CalcLOD::CalcLOD(int argc, char **argv) {
   Octree octree(mesh->getVertices());
 
   TriangleMesh *new_mesh = new TriangleMesh();
+  int level = octree.getMaxLevel() - LOD_LEVEL;
   if (LOD_LEVEL == 0) {
-    Debug::print(octree);
     cubize(octree, *new_mesh, 0, -1, false);
-  } else if (LOD_LEVEL <= octree.getMaxLevel()) {
-    simplify(octree, *new_mesh, LOD_LEVEL);
+  } else if (level > 0) {
+    octree.cut(level);
+    simplify(octree, *new_mesh, 0, level);
   } else {
     cerr << "Error LOD > octree max level" << std::endl;
   }
