@@ -28,6 +28,8 @@ struct BoundingBox {
   glm::vec3 pos, size;
 };
 
+enum Collision { Positive, Middle, Negative };
+
 class TriangleMesh {
 public:
   TriangleMesh(glm::vec3 position = {0, 0, 0});
@@ -49,6 +51,7 @@ public:
   vector<glm::vec3> getVertices() const;
   vector<float3> exportVertices() const;
   vector<uint3> exportTriangles() const;
+  Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
   int getVerticesSize() const;
   int getTriangleSize() const;
 

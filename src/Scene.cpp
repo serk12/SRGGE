@@ -92,8 +92,9 @@ void Scene::update(int deltaTime) { player.update(deltaTime); }
 bool Scene::viewCulling(const TriangleMesh &mesh) {
   auto frustum = player.getFrustum();
   for (auto &p : frustum) {
-    if (glm::dot(glm::vec3(p), mesh.getPoss()) + p.w + mesh.getRadius() <= 0)
+    if (mesh.planeTest(p) != Collision::Negative) {
       return false;
+    }
   }
   return true;
 }

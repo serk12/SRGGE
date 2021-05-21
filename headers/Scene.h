@@ -1,6 +1,7 @@
 #ifndef _SCENE_INCLUDE
 #define _SCENE_INCLUDE
 
+#include "KdTree.h"
 #include "Player.h"
 #include "ShaderProgram.h"
 #include "TriangleMesh.h"
@@ -37,6 +38,7 @@ private:
   bool occlusionCulling(const TriangleMesh &mesh);
 
 private:
+  KdTree kdTree;
   std::list<TriangleMesh *> meshes;
   ShaderProgram basicProgram;
   Player player;

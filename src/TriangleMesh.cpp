@@ -51,6 +51,7 @@ void TriangleMesh::addVertex(const glm::vec3 &position) {
       if (bbMin[i] > position[i])
         bbMin[i] = position[i];
     }
+    r = glm::length(bbMax - bbMin);
   }
   vertices.push_back(position);
 }
@@ -64,10 +65,7 @@ BoundingBox TriangleMesh::getBoundingBox() const {
   return bb;
 }
 
-float TriangleMesh::getRadius() const {
-  glm::vec3 r3 = bbMax - bbMin;
-  return glm::length(r3);
-}
+float TriangleMesh::getRadius() const { return r; }
 
 void TriangleMesh::addTriangle(int v0, int v1, int v2) {
   triangles.push_back(v0);
@@ -140,6 +138,47 @@ void TriangleMesh::free() {
 
   vertices.clear();
   triangles.clear();
+}
+
+Collision floatToCollision(float result) {
+  if (result == 0.0f) {
+    return Collision::Middle;
+  } else if (result > 0.0f) {
+    return Collision::Positive;
+  } else {
+    return Collision::Negative;
+  }
+}
+
+Collision planeSphereTest(const glm::vec4 &p, const glm::vec3 &poss, float r) {
+  float result = glm::dot(glm::vec3(p), poss) + p.w + r;
+  return floatToCollision(result);
+}
+
+Collision planeVsPointTest(const glm::vec4 &plane, const glm::vec3 &point) {
+  glm::vec3 v = point - glm::vec3(-plane[4] / plane[0], 0.0f, 0.0f);
+  float result = glm::dot(v, glm::vec3(plane));
+  return floatToCollision(result);
+}
+
+Collision TriangleMesh::planeTest(const glm::vec4 &plane, bool sphere) const {
+  if (sphere) {
+    return planeSphereTest(plane, pos, r);
+  } else {
+    auto c = Collision::Middle;
+    for (unsigned int i = 0; i < 8; ++i) {
+      glm::vec3 p;
+      for (unsigned int j = 0; j < 3; ++j) {
+        // get the j bite from i
+        p[j] = (i & (1 << j)) >> j ? bbMin[j] : bbMax[j];
+      }
+      auto result = planeVsPointTest(plane, p);
+      if (c != Collision::Middle && result != c) {
+        return Collision::Middle;
+      }
+      c = result;
+    }
+  }
 }
 
 vector<glm::vec3> TriangleMesh::getVertices() const { return vertices; }
