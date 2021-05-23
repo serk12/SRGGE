@@ -33,6 +33,22 @@ vector<uint3> TriangleMesh::exportTriangles() const {
   return result;
 }
 
+vector<int3> TriangleMesh::getTriangles() const {
+  vector<int3> result(getTriangleSize());
+  int3 aux;
+  for (unsigned int i = 0; i < triangles.size(); ++i) {
+    if (i % 3 == 0) {
+      aux.x = triangles[i];
+    } else if (i % 3 == 1) {
+      aux.y = triangles[i];
+    } else {
+      aux.z = triangles[i];
+      result[i / 3] = aux;
+    }
+  }
+  return result;
+}
+
 TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos) {
   model = glm::mat4(1.0f);
   model = glm::translate(model, pos);

@@ -25,12 +25,12 @@ do
     key="$1"
     case $key in
         +(cosa|wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
-        INPUT_FILE="models/${key}.ply"
         DEFAULT_MODEL="models/${key}.ply"
+        INPUT_FILE="models/${key}.ply"
         ;;
         +(small_museum|big_grid))
-        INPUT_FILE="resources/${key}.txt"
         DEFAULT_TAILMAP="resources/${key}.txt"
+        INPUT_FILE="resources/${key}.txt"
         ;;
         --LOD|--calc-LOD)
         if [[ $INPUT_FILE == *".txt" ]]; then
@@ -60,7 +60,7 @@ esac
 # build
 case $COMMAND in
 "models")
-    ls -l --block-size=M ../models/*.ply
+    ls -l --block-size=M --sort=size ../models/*.ply
     ;;
 "init")
     mkdir -p build

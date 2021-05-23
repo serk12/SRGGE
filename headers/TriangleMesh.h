@@ -24,6 +24,18 @@ struct uint3 {
   uint32_t x, y, z;
 };
 
+struct int3 {
+  int x, y, z;
+};
+
+inline bool operator<(const int3 &lhs, const int3 &rhs) {
+  if (lhs.x != rhs.x)
+    return lhs.x < rhs.x;
+  if (lhs.y != rhs.y)
+    return lhs.y < rhs.y;
+  return lhs.z < rhs.z;
+}
+
 class TriangleMesh {
 public:
   TriangleMesh(glm::vec3 position = {0, 0, 0});
@@ -45,6 +57,7 @@ public:
   vector<uint3> exportTriangles() const;
   int getVerticesSize() const;
   int getTriangleSize() const;
+  vector<int3> getTriangles() const;
 
 private:
   vector<glm::vec3> vertices;
