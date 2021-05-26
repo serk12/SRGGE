@@ -2,9 +2,9 @@
 #define _SCENE_INCLUDE
 
 #include "KdTree.h"
+#include "Mesh.h"
 #include "Player.h"
 #include "ShaderProgram.h"
-#include "TriangleMesh.h"
 #include <glm/glm.hpp>
 #include <list>
 
@@ -33,13 +33,13 @@ private:
   void unloadMesh();
   void initShaders();
   void loadTileMap();
-  bool cullingTest(const TriangleMesh &mesh);
-  bool viewCulling(const TriangleMesh &mesh);
-  bool occlusionCulling(const TriangleMesh &mesh);
+  bool cullingTest(const Mesh &mesh);
+  bool viewCulling(const Mesh &mesh);
+  bool occlusionCulling(const Mesh &mesh);
 
 private:
   KdTree kdTree;
-  std::list<TriangleMesh *> meshes;
+  std::list<Mesh *> meshes;
   ShaderProgram basicProgram;
   Player player;
   bool bPolygonFill;

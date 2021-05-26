@@ -1,7 +1,6 @@
 #include "Debug.h"
 #include <cmath>
 #define GLM_FORCE_RADIANS
-#include "PLYReader.h"
 #include "Scene.h"
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,6 +22,7 @@ void Scene::init(const std::string &fn, CullingMethod cm) {
   bPolygonFill = true;
   filename = fn;
   basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");
+  Mesh::setShaderProgram(&basicProgram);
   player.init();
   std::string formatFile =
       std::string(&filename[filename.size() - 3], &filename[filename.size()]);
@@ -37,23 +37,13 @@ void Scene::loadMesh() {
   std::string formatFile =
       std::string(&filename[filename.size() - 3], &filename[filename.size()]);
   if (formatFile == "ply") {
-    loadMesh(filename, next_pos);
+    Mesh *mesh = new Mesh(filename, next_pos);
+    meshes.push_back(mesh);
     next_pos.x = (int(next_pos.x) + 1) % 2;
     next_pos.z = (int(next_pos.z) + int(next_pos.x == 0));
   } else {
     // this should not happen
     std::cerr << "filename is a txt" << std::endl;
-  }
-}
-
-void Scene::loadMesh(const std::string &fn, glm::vec3 pos) {
-  Debug::print(pos);
-  TriangleMesh *mesh = new TriangleMesh(pos);
-  meshes.push_back(mesh);
-  PLYReader reader;
-  bool bSuccess = reader.readMesh(fn, *mesh);
-  if (bSuccess) {
-    mesh->sendToOpenGL(basicProgram);
   }
 }
 
@@ -64,22 +54,22 @@ void Scene::loadTileMap() {
     int j = -tilemap[0].size() / 2;
     for (std::string m : t) {
       if (m != TileMapLoader::EMPTY) {
-        if (m != TileMapLoader::WALL) {
-          loadMesh(TileMapLoader::GROUND, glm::vec3(i, -1.5f, j));
-        }
-        if (m != TileMapLoader::GROUND) {
-          loadMesh(m, glm::vec3(i, -1.0f, j));
-        }
+        Mesh *mesh = new Mesh(m, glm::vec3(i, -1.0f, j));
+        meshes.push_back(mesh);
       }
       ++j;
     }
     ++i;
   }
+  kdTree = KdTree(meshes);
+  Debug::print("NANI?");
+  Debug::print(kdTree);
 }
 
 void Scene::unloadMesh() {
   if (meshes.size() > 0) {
-    TriangleMesh *mesh = meshes.back();
+    Mesh *mesh = meshes.back();
+    delete mesh;
     meshes.pop_back();
 
     next_pos.x = (int(next_pos.x) - 1) % 2;
@@ -89,18 +79,18 @@ void Scene::unloadMesh() {
 
 void Scene::update(int deltaTime) { player.update(deltaTime); }
 
-bool Scene::viewCulling(const TriangleMesh &mesh) {
+bool Scene::viewCulling(const Mesh &mesh) {
   auto frustum = player.getFrustum();
   for (auto &p : frustum) {
-    if (mesh.planeTest(p) != Collision::Negative) {
+    if (mesh.planeTest(p) != Collision::Positive) {
       return false;
     }
   }
   return true;
 }
-bool Scene::occlusionCulling(const TriangleMesh &mesh) { return true; }
+bool Scene::occlusionCulling(const Mesh &mesh) { return true; }
 
-bool Scene::cullingTest(const TriangleMesh &mesh) {
+bool Scene::cullingTest(const Mesh &mesh) {
   switch (cullingPolicy) {
   default:
   case NONE:

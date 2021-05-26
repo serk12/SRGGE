@@ -1,36 +1,61 @@
 #include "KdTree.h"
-#include "TriangleMesh.h"
 
-KdTree::KdTree(level) : mAxis(Axis::next(level)), mLevel(level), mPoss(0.0f) {}
+#include "Debug.h"
 
-KdTree::KdTree(const std::vector<TriangleMesh *> &elements, int level)
-    : KdTree(level) {
-  int size = mElements.size();
+KdTree::KdTree(int level) : mLevel(level), mPoss(0.0f) {}
+
+KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
+  int size = elements.size();
   if (size > 1) {
-    mPoss = glm::vec3(0.0f);
+    glm::vec3 poss(0.0f);
     for (const auto &e : elements) {
-      mPoss += e->getPoss();
+      poss += e->getPos();
     }
-    mPoss *= axis / size;
-    std::vector<TriangleMesh *> positive, negative;
-    for (const auto &e : elements) {
-      auto result = e->planeTest(glm::vec4(mAxis, mPoss));
-      switch (result) {
-      default:
-      case Collision::Middle:
-        positive.push_back(e);
-        negative.push_back(e);
-        break;
-      case Collision::Positive:
-        positive.push_back(e);
-        break;
-      case Collision::Negative:
-        negative.push_back(e);
-        break;
+    mPoss = poss / float(size);
+    bool correct = false;
+    for (unsigned int i = 0; i < Axis::DIM; ++i) {
+      std::list<Mesh *> positive, mid, negative;
+      mAxisID = Axis::axis(mLevel + i);
+      float point = mPoss[mAxisID];
+      for (auto e : elements) {
+        float mesh_size = e->getSize()[mAxisID];
+        float lower = e->getPos()[mAxisID];
+        float upper = lower + mesh_size;
+        if (point >= lower && point < upper) {
+          mid.push_back(e);
+        } else if (point < lower) {
+          negative.push_back(e);
+        } else if (point >= upper) {
+          positive.push_back(e);
+        } else {
+          cerr << "ERROR:" << std::endl;
+        }
       }
-      childrens = {KdTree(negative, level + 1), KdTree(positive, level + 1)};
+
+      if (negative.size() > 0 && positive.size() > 0) {
+        correct = true;
+        KdTree two = KdTree(positive, level + 1);
+        KdTree one = KdTree(negative, level + 1);
+        mChildrens.push_back(one);
+        mChildrens.push_back(two);
+        for (const auto &e : mid) {
+          mElements.push_back(e);
+        }
+      }
+    }
+    if (!correct) {
+      for (const auto &e : elements) {
+        mElements.push_back(e);
+      }
     }
   } else if (size == 1) {
-    mElements.push_back(elements[0]);
+    mElements.push_back(*elements.begin());
   }
 }
+
+KdTree KdTree::getChildren(int i) const { return mChildrens[i]; }
+int KdTree::getQttyChildrens() const { return mChildrens.size(); }
+const Mesh *KdTree::getElement(int i) const { return mElements[i]; }
+int KdTree::getQttyElements() const { return mElements.size(); }
+bool KdTree::isLeaf() const { return mChildrens.size() == 0; }
+int KdTree::getLevel() const { return mLevel; }

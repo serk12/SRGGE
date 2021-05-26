@@ -24,15 +24,9 @@ struct uint3 {
   uint32_t x, y, z;
 };
 
-struct BoundingBox {
-  glm::vec3 pos, size;
-};
-
-enum Collision { Positive, Middle, Negative };
-
 class TriangleMesh {
 public:
-  TriangleMesh(glm::vec3 position = {0, 0, 0});
+  TriangleMesh();
 
   void addVertex(const glm::vec3 &position);
   void addTriangle(int v0, int v1, int v2);
@@ -42,25 +36,22 @@ public:
   void render() const;
   void free();
 
-  glm::mat4 &getModelMatrix();
-  glm::vec3 getPoss() const;
-
-  BoundingBox getBoundingBox() const;
   float getRadius() const;
+  glm::vec3 getSize() const;
 
   vector<glm::vec3> getVertices() const;
   vector<float3> exportVertices() const;
   vector<uint3> exportTriangles() const;
-  Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
+
   int getVerticesSize() const;
   int getTriangleSize() const;
+  void offSetY(float y);
 
 private:
   vector<glm::vec3> vertices;
   vector<int> triangles;
 
-  glm::mat4 model;
-  glm::vec3 pos, bbMin, bbMax;
+  glm::vec3 bbMin, bbMax;
   float r;
 
   GLuint vao;

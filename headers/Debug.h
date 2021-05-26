@@ -1,8 +1,10 @@
 #ifndef _DEBUG_INCLUDE
 #define _DEBUG_INCLUDE
 
+#include "KdTree.h"
 #include "Octree.h"
 #include "TileMapLoader.h"
+#include "TriangleMesh.h"
 #include <iostream>
 
 class Debug {
@@ -51,6 +53,23 @@ public:
     }
     std::cout << "END CHILD" << std::endl;
     std::cout << "Max level: " << o.getMaxLevel() << std::endl;
+  }
+
+  static void print(const glm::vec4 &v) {
+    std::cout << "vec4: " << v.x << " " << v.y << " " << v.z << " " << v.w
+              << std::endl;
+  }
+  static void print(const std::string &s) { std::cerr << s << std::endl; }
+
+  static void print(const KdTree &kdtree) {
+    std::cerr << "LEVEL: " << kdtree.getLevel() << std::endl;
+    for (unsigned int i = 0; i < kdtree.getQttyChildrens(); ++i) {
+      std::cerr << "    node:" << kdtree.getQttyElements() << std::endl;
+      Debug::print(kdtree.getChildren(i));
+    }
+    if (kdtree.isLeaf()) {
+      std::cerr << "        leave:" << kdtree.getQttyElements() << std::endl;
+    }
   }
 };
 
