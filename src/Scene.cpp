@@ -62,8 +62,6 @@ void Scene::loadTileMap() {
     ++i;
   }
   kdTree = KdTree(meshes);
-  Debug::print("NANI?");
-  Debug::print(kdTree);
 }
 
 void Scene::unloadMesh() {

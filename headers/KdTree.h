@@ -39,11 +39,11 @@ public:
   int getQttyElements() const;
   bool isLeaf() const;
   int getLevel() const;
+  glm::vec3 getAxis() const;
 
 private:
   std::vector<KdTree> mChildrens;
   std::vector<const Mesh *> mElements;
-  glm::vec3 mAxis;
   glm::vec3 mPoss;
   int mLevel;
   int mAxisID;

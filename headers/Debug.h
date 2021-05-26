@@ -63,6 +63,7 @@ public:
 
   static void print(const KdTree &kdtree) {
     std::cerr << "LEVEL: " << kdtree.getLevel() << std::endl;
+    Debug::print(kdtree.getAxis());
     for (unsigned int i = 0; i < kdtree.getQttyChildrens(); ++i) {
       std::cerr << "    node:" << kdtree.getQttyElements() << std::endl;
       Debug::print(kdtree.getChildren(i));

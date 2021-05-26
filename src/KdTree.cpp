@@ -59,3 +59,4 @@ const Mesh *KdTree::getElement(int i) const { return mElements[i]; }
 int KdTree::getQttyElements() const { return mElements.size(); }
 bool KdTree::isLeaf() const { return mChildrens.size() == 0; }
 int KdTree::getLevel() const { return mLevel; }
+glm::vec3 KdTree::getAxis() const { return Axis::next(mAxisID); }
