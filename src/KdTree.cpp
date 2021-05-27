@@ -21,9 +21,9 @@ KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
         float mesh_size = e->getSize()[mAxisID];
         float lower = e->getPos()[mAxisID];
         float upper = lower + mesh_size;
-        if (point >= lower && point < upper) {
+        if (point > lower && point < upper) {
           mid.push_back(e);
-        } else if (point < lower) {
+        } else if (point <= lower) {
           negative.push_back(e);
         } else if (point >= upper) {
           positive.push_back(e);
