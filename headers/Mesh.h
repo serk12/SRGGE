@@ -15,6 +15,7 @@ public:
   glm::mat4 &getModelMatrix();
   glm::vec3 getPos() const;
   glm::vec3 getSize() const;
+  bool addToKdTree() const;
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
 
   void render() const;

@@ -16,6 +16,8 @@ void Mesh::loadMesh(const std::string &fn) {
   }
 }
 
+bool Mesh::addToKdTree() const { return mName != TileMapLoader::GROUND; }
+
 void Mesh::setShaderProgram(ShaderProgram *basicProgram) {
   msBasicProgram = basicProgram;
 }
