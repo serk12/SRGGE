@@ -64,12 +64,18 @@ public:
   static void print(const KdTree &kdtree) {
     std::cerr << "LEVEL: " << kdtree.getLevel() << std::endl;
     Debug::print(kdtree.getAxis());
-    for (unsigned int i = 0; i < kdtree.getQttyChildrens(); ++i) {
-      std::cerr << "    node:" << kdtree.getQttyElements() << std::endl;
-      Debug::print(kdtree.getChildren(i));
-    }
+
     if (kdtree.isLeaf()) {
-      std::cerr << "        leave:" << kdtree.getQttyElements() << std::endl;
+      std::cerr << "    leave:" << kdtree.getQttyElements() << std::endl;
+    } else {
+      std::cerr << "    node:" << kdtree.getQttyElements() << std::endl;
+    }
+    for (unsigned int i = 0; i < kdtree.getQttyElements(); ++i) {
+      std::cerr << " element: " << i << " " << kdtree.getElement(i)->getName()
+                << std::endl;
+    }
+    for (unsigned int i = 0; i < kdtree.getQttyChildrens(); ++i) {
+      Debug::print(kdtree.getChildren(i));
     }
   }
 };

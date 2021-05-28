@@ -15,6 +15,18 @@ void Mesh::loadMesh(const std::string &fn) {
     msNameToModel[fn] = mesh;
   }
 }
+void Mesh::resetOcclusion(bool view, bool occluded) {
+  if (view) {
+    mInsideFrustum = true;
+  }
+  if (mOccluded && addToKdTree()) {
+    mOccluded = false;
+  }
+}
+
+void Mesh::setInsideFrustum(bool inside) { mInsideFrustum = inside; }
+void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
+bool Mesh::isVisible() { return mInsideFrustum && !mOccluded; }
 
 bool Mesh::addToKdTree() const { return mName != TileMapLoader::GROUND; }
 
@@ -29,22 +41,33 @@ TriangleMesh *Mesh::getMesh(const std::string &fn) {
   return msNameToModel[fn];
 }
 
-Mesh::Mesh(const std::string &name, glm::vec3 pos) {
-  mName = name;
-  mModelMatrix = glm::mat4(1.0f);
+Mesh::Mesh(glm::vec3 pos) {
+  mInsideFrustum = true;
+  mOccluded = false;
+  mName = "";
   mPos = pos;
+  mModelMatrix = glm::mat4(1.0f);
   mModelMatrix = glm::translate(mModelMatrix, mPos);
+  mGround = nullptr;
+  mModel = new TriangleMesh();
+}
+
+Mesh::Mesh(const std::string &name, glm::vec3 pos) : Mesh(pos) {
+  mName = name;
   if (mName != TileMapLoader::WALL && mName != TileMapLoader::GROUND) {
     mGround = getMesh(TileMapLoader::GROUND);
-  } else {
-    mGround = nullptr;
   }
   mModel = getMesh(name);
 }
+void Mesh::buildCube(glm::vec3 pos, glm::vec3 size) {
+  mModel->buildCube(pos, size);
+}
 
 glm::mat4 &Mesh::getModelMatrix() { return mModelMatrix; }
+const std::string &Mesh::getName() const { return mName; }
 glm::vec3 Mesh::getPos() const { return mPos; }
 glm::vec3 Mesh::getSize() const { return mModel->getSize(); }
+glm::vec3 Mesh::getMin() const { return mModel->getMin(); }
 
 void Mesh::render() const {
   if (mGround != nullptr) {

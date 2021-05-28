@@ -4,26 +4,13 @@
 #include "Mesh.h"
 #include <glm/glm.hpp>
 #include <list>
+#include <stack>
 #include <vector>
 
-namespace Axis {
-inline static const int DIM = 3;
-inline static const glm::vec3 X = {1.0f, 0.0f, 0.0f};
-inline static const glm::vec3 Y = {0.0f, 1.0f, 0.0f};
-inline static const glm::vec3 Z = {0.0f, 0.0f, 1.0f};
-static int axis(int i) { return i % DIM; }
-static const glm::vec3 next(int i) {
-  switch (axis(i)) {
-  default:
-  case 0:
-    return Z;
-  case 1:
-    return X;
-  case 2:
-    return Y;
-  }
-}
-}; // namespace Axis
+struct Visibility {
+  bool wasVisible;
+  bool opened;
+};
 
 class KdTree {
 public:
@@ -41,12 +28,28 @@ public:
   int getLevel() const;
   glm::vec3 getAxis() const;
 
+  void render() const;
+
+  void pullUpVisibility();
+  const Mesh &getAABBMesh() const;
+  void renderModels() const;
+  void traverseNode(std::stack<KdTree *> &traversalStack);
+  Visibility computeVisibility();
+  void nextFrame();
+
 private:
   std::vector<KdTree> mChildrens;
-  std::vector<const Mesh *> mElements;
+  std::vector<Mesh *> mElements;
   glm::vec3 mPoss;
   int mLevel;
   int mAxisID;
+
+  Mesh mGlobalAABB;
+  Mesh mElementsAABB;
+  KdTree *mFather;
+  int mLastFrameVisible;
+  bool mVisible;
+  inline static const int OCCLUDED_FRAMES = 8;
 };
 
 #endif

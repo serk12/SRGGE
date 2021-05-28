@@ -38,6 +38,7 @@ public:
 
   float getRadius() const;
   glm::vec3 getSize() const;
+  glm::vec3 getMin() const;
 
   vector<glm::vec3> getVertices() const;
   vector<float3> exportVertices() const;

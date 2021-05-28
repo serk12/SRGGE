@@ -9,13 +9,21 @@ enum Collision { Positive = 1, Middle = 0, Negative = -1 };
 
 class Mesh {
 public:
-  Mesh(const std::string &name = TileMapLoader::WALL,
-       glm::vec3 pos = {0, 0, 0});
+  Mesh(glm::vec3 pos = {0, 0, 0});
+  Mesh(const std::string &name, glm::vec3 pos = {0, 0, 0});
 
   glm::mat4 &getModelMatrix();
+  const std::string &getName() const;
   glm::vec3 getPos() const;
   glm::vec3 getSize() const;
+  glm::vec3 getMin() const;
+
+  void resetOcclusion(bool view, bool occluded);
+  void setInsideFrustum(bool inside);
+  void setOcclusion(bool occluded);
+  bool isVisible();
   bool addToKdTree() const;
+  void buildCube(glm::vec3 pos, glm::vec3 size);
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
 
   void render() const;
@@ -33,6 +41,7 @@ private:
 
   glm::mat4 mModelMatrix;
   glm::vec3 mPos;
+  bool mInsideFrustum, mOccluded;
 };
 
 #endif

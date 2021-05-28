@@ -45,13 +45,14 @@ void TriangleMesh::addVertex(const glm::vec3 &position) {
       if (bbMin[i] > position[i])
         bbMin[i] = position[i];
     }
-    r = glm::length(bbMax - bbMin);
+    r = glm::length(getSize());
   }
   vertices.push_back(position);
 }
 
 float TriangleMesh::getRadius() const { return r; }
 glm::vec3 TriangleMesh::getSize() const { return bbMax - bbMin; }
+glm::vec3 TriangleMesh::getMin() const { return bbMin; }
 
 void TriangleMesh::addTriangle(int v0, int v1, int v2) {
   triangles.push_back(v0);
