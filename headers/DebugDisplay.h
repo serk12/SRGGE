@@ -11,9 +11,10 @@ public:
   bool update(int dt);
   bool render();
 
+  void setQttyTriangles(int triangles);
+
 private:
-  int deltaTime;
-  int qtty;
+  int deltaTime, qttyTriangles, qtty;
   TextRender textRender;
 };
 

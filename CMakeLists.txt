@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 cmake_policy(SET CMP0015 NEW)
 cmake_policy(SET CMP0072 OLD)
@@ -24,6 +24,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(GLEW REQUIRED)
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Freetype REQUIRED)
 # ^ install it from https://www.freetype.org/download.html
 find_package(tinyply REQUIRED)
@@ -47,4 +48,4 @@ aux_source_directory("${CMAKE_SOURCE_DIR}/src" SUB_SOURCES)
 set(SOURCES ${SUB_SOURCES})
 add_executable(${appName} ${SOURCES} main.cpp)
 
-target_link_libraries(${appName} tinyply ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES})
+target_link_libraries(${appName} tinyply ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} Eigen3::Eigen)

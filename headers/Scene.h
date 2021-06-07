@@ -25,6 +25,7 @@ public:
   void keyEvent(int key, int specialkey, bool pressed);
   void mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                  bool *mouseButtons);
+  int getQttyTriangles() const;
 
 private:
   void loadMesh();
@@ -41,6 +42,7 @@ private:
   ShaderProgram basicProgram;
   Player player;
   bool bPolygonFill;
+  int qttyTriangles;
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
   CullingMethod cullingPolicy;

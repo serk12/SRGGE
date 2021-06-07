@@ -97,6 +97,8 @@ bool Scene::viewCulling(const TriangleMesh &mesh) {
 }
 bool Scene::occlusionCulling(const TriangleMesh &mesh) { return true; }
 
+int Scene::getQttyTriangles() const { return qttyTriangles; }
+
 bool Scene::cullingTest(const TriangleMesh &mesh) {
   switch (cullingPolicy) {
   default:
@@ -119,9 +121,10 @@ void Scene::render() {
     basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
     basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+    qttyTriangles = 0;
     for (auto &mesh : meshes) {
       if (cullingTest(*mesh)) {
+        qttyTriangles += mesh->getTriangleSize();
         basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
         if (!bPolygonFill) {
           basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);

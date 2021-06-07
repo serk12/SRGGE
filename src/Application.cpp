@@ -24,6 +24,7 @@ void Application::init(const std::string &filename) {
 bool Application::update(int deltaTime) {
   scene.update(deltaTime);
   debugDisplay.update(deltaTime);
+  debugDisplay.setQttyTriangles(scene.getQttyTriangles());
   return bPlay;
 }
 

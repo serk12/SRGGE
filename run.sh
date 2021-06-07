@@ -45,6 +45,9 @@ do
         shift
         CULLING_LEVEL=$1
         ;;
+        *.ply|*.txt)
+        OUTPUT_FILE=$key
+        ;;
     esac
     shift
 done
@@ -59,6 +62,17 @@ esac
 
 # build
 case $COMMAND in
+"install")
+    echo "plis install git, cmake and Freetype"
+    echo "project-installing: TinyPly"
+    git submodule init
+    git submodule update
+    mkdir -p ./libs/tinyply/tmp/build
+    cd ./libs/tinyply/tmp/build
+    cmake ../../
+    make
+    echo "if tinyply gives errors plis try 'sudo make install'"
+    ;;
 "models")
     ls -l --block-size=M --sort=size ../models/*.ply
     ;;
@@ -80,7 +94,7 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    echo $INPUT_FILE
-    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL
+    echo $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
+    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
     ;;
 esac
