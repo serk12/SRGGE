@@ -23,6 +23,6 @@ bool DebugDisplay::update(int dt) {
 bool DebugDisplay::render() {
   int fps = 1.0f / (deltaTime / qtty) * 1000.0f;
   std::string s = std::to_string(fps);
-  textRender.renderText(s, 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+  textRender.renderText(s, 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 1.0f, 0.2f));
   return true;
 }

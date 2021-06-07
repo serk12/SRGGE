@@ -16,6 +16,7 @@ LOD_FLAG=""
 LOD_LEVEL=""
 CULLING_FLAG=""
 CULLING_LEVEL=""
+CONFIG="Debug"
 COMMAND=$1
 shift
 
@@ -45,6 +46,9 @@ do
         shift
         CULLING_LEVEL=$1
         ;;
+        --RELEASE)
+        CONFIG="Release"
+        ;;
     esac
     shift
 done
@@ -70,7 +74,7 @@ case $COMMAND in
     $0 build
     ;;
 "build")
-    cmake --build . || { exit 1; }
+    cmake --build . --config $CONFIG  || { exit 1; }
     ;;
 "clean")
     rm -rf ./build/*

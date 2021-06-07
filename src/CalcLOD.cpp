@@ -61,7 +61,7 @@ CalcLOD::CalcLOD(int argc, char **argv) {
   TriangleMesh *mesh = new TriangleMesh();
   bool bSuccess = PLYReader::readMesh(std::string(argv[1]), *mesh);
   if (not bSuccess) {
-    std::cerr << "error loading model" << std::endl;
+    Debug::error("error loading model");
     return;
   }
 
@@ -69,12 +69,11 @@ CalcLOD::CalcLOD(int argc, char **argv) {
 
   TriangleMesh *new_mesh = new TriangleMesh();
   if (LOD_LEVEL == 0) {
-    Debug::print(octree);
     cubize(octree, *new_mesh, 0, -1, false);
   } else if (LOD_LEVEL <= octree.getMaxLevel()) {
     simplify(octree, *new_mesh, LOD_LEVEL);
   } else {
-    cerr << "Error LOD > octree max level" << std::endl;
+    Debug::error("Error LOD > octree max level");
   }
   modelToPly("testing", *new_mesh);
 }

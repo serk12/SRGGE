@@ -7,83 +7,17 @@
 #include "TriangleMesh.h"
 #include <iostream>
 
-class Debug {
-public:
-  static void print(const TileRowModels &t) {
-    for (auto s : t) {
-      std::cout << s << " ";
-    }
-    std::cout << std::endl;
-  }
-
-  static void print(const TileMapModels &t) {
-    for (auto r : t) {
-      print(r);
-    }
-  }
-
-  static void print(const float &f) {
-    std::cout << "float: " << f << std::endl;
-  }
-
-  static void print(const glm::vec3 &v) {
-    std::cout << "vec3: " << v.x << " " << v.y << " " << v.z << std::endl;
-  }
-
-  static void print(const std::vector<glm::vec3> &v) {
-    for (const auto &p : v) {
-      Debug::print(p);
-    }
-  }
-
-  static void print(const Octree &o) {
-    std::cout << "QTTY: " << o.getQtty() << " ELEMENTS: " << o.getQttyElements()
-              << " SIZE: ";
-    print(o.getSize());
-    std::cout << " POSS ";
-    print(o.getPoss());
-    std::cout << std::endl;
-
-    for (int i = 0; i < Octree::VECT_SIZE; ++i) {
-      const Octree c = o.getChildren(i);
-      std::cout << "LEVEL: " << c.getLevel() << " CHILD: " << i
-                << " QTTY: " << c.getQtty()
-                << " ELEMENTS:" << c.getQttyElements() << " SIZE: ";
-      print(c.getSize());
-      std::cout << " POSS: ";
-      print(c.getPoss());
-      std::cout << std::endl;
-      if (c.getQtty() > 1) {
-        Debug::print(c);
-      }
-    }
-    std::cout << "END CHILD" << std::endl;
-    std::cout << "Max level: " << o.getMaxLevel() << std::endl;
-  }
-
-  static void print(const glm::vec4 &v) {
-    std::cout << "vec4: " << v.x << " " << v.y << " " << v.z << " " << v.w
-              << std::endl;
-  }
-  static void print(const std::string &s) { std::cerr << s << std::endl; }
-
-  static void print(const KdTree &kdtree) {
-    std::cerr << "LEVEL: " << kdtree.getLevel() << std::endl;
-    Debug::print(kdtree.getAxis());
-
-    if (kdtree.isLeaf()) {
-      std::cerr << "    leave:" << kdtree.getQttyElements() << std::endl;
-    } else {
-      std::cerr << "    node:" << kdtree.getQttyElements() << std::endl;
-    }
-    for (unsigned int i = 0; i < kdtree.getQttyElements(); ++i) {
-      std::cerr << " element: " << i << " " << kdtree.getElement(i)->getName()
-                << std::endl;
-    }
-    for (unsigned int i = 0; i < kdtree.getQttyChildrens(); ++i) {
-      Debug::print(kdtree.getChildren(i));
-    }
-  }
+struct Debug {
+  static void error(const std::string &s);
+  static void print(const TileRowModels &t);
+  static void print(const TileMapModels &t);
+  static void print(const glm::vec3 &v);
+  static void print(const std::vector<glm::vec3> &v);
+  static void print(const Octree &o);
+  static void print(const glm::vec4 &v);
+  static void print(const std::string &s);
+  static void print(const float &f);
+  static void print(const KdTree &kdtree);
 };
 
 #endif // ifndef _DEBUG_INCLUDE

@@ -10,7 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "-v")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -std=c++17")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++17")
 execute_process(COMMAND ln -s ../shaders)
 execute_process(COMMAND ln -s ../resources)

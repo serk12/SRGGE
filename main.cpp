@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
       if (argc >= i + 1) {
         CalcLOD::LOD_LEVEL = std::stoi(argv[i + 1]);
       } else {
-        std::cout << "ERROR LOD flag" << std::endl;
+        Debug::error("ERROR LOD flag");
         break;
       }
 
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
       if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '3') {
         Application::CULLING_POLICY = CullingMethod(std::stoi(argv[i + 1]));
       } else {
-        std::cout << "ERROR culling flag" << std::endl;
+        Debug::error("ERROR culling flag");
         break;
       }
     }

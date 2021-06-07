@@ -1,6 +1,7 @@
 #include "KdTree.h"
 
 #include "Debug.h"
+
 namespace Axis {
 inline static const int DIM = 3;
 inline static const glm::vec3 Z = {0.0f, 0.0f, 1.0f};
@@ -20,16 +21,24 @@ static const glm::vec3 next(int i) {
 }
 }; // namespace Axis
 
-KdTree::KdTree(int level)
-    : mLevel(level), mPoss(0.0f), mFather(nullptr), mElementsAABB(),
-      mGlobalAABB() {}
+KdTree::~KdTree() {}
 
-KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
+KdTree::KdTree(KdTree *father, int level)
+    : mLevel(level), mPoss(0.0f), mFather(father), mElementsAABB(),
+      mGlobalAABB() {
+  cerr << "father point:" << mFather << " bool:" << (mFather == nullptr)
+       << std::endl;
+  if (level > MAX_DEEP)
+    MAX_DEEP = level;
+}
+
+KdTree::KdTree(const std::list<Mesh *> &elements, KdTree *father, int level)
+    : KdTree(father, level) {
   int size = elements.size();
   if (size > 1) {
     glm::vec3 poss(0.0f);
     for (const auto &e : elements) {
-      if (e->addToKdTree()) {
+      if (e->canAddToKdTree()) {
         poss += e->getPos();
       }
     }
@@ -40,7 +49,7 @@ KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
       mAxisID = Axis::axis(mLevel + i);
       float point = mPoss[mAxisID];
       for (auto &e : elements) {
-        if (e->addToKdTree()) {
+        if (e->canAddToKdTree()) {
           float mesh_size = e->getSize()[mAxisID];
           float lower = e->getPos()[mAxisID];
           float upper = lower + mesh_size;
@@ -51,38 +60,37 @@ KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
           } else if (point >= upper) {
             positive.push_back(e);
           } else {
-            cerr << "ERROR: point vs line" << std::endl;
+            Debug::error("ERROR: point vs line");
           }
         }
       }
 
       if (negative.size() > 0 && positive.size() > 0) {
         correct = true;
-        KdTree two = KdTree(positive, level + 1);
-        two.mFather = this;
-        KdTree one = KdTree(negative, level + 1);
-        one.mFather = this;
+        KdTree *two = new KdTree(positive, this, level + 1);
+        KdTree *one = new KdTree(negative, this, level + 1);
         mChildrens.push_back(one);
         mChildrens.push_back(two);
         for (const auto &e : mid) {
           mElements.push_back(e);
-          mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
-                                  e->getSize());
+          glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
+          mElementsAABB.buildCube(min, e->getSize());
         }
+        break;
       }
     }
     if (!correct) {
       for (const auto &e : elements) {
         mElements.push_back(e);
-        mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
-                                e->getSize());
+        glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
+        mElementsAABB.buildCube(min, e->getSize());
       }
     }
   } else if (size == 1) {
     auto *e = *elements.begin();
     mElements.push_back(e);
-    mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
-                            e->getSize());
+    glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
+    mElementsAABB.buildCube(min, e->getSize());
   }
   mGlobalAABB = Mesh(mElementsAABB.getMin());
   mGlobalAABB.buildCube({0, 0, 0}, mElementsAABB.getSize());
@@ -103,8 +111,8 @@ void KdTree::traverseNode(std::stack<KdTree *> &traversalStack,
                           ShaderProgram &basicProgram) {
   // because we have "middle" objects we render always
   renderModels(basicProgram);
-  for (auto &c : mChildrens) {
-    traversalStack.push(&c);
+  for (auto c : mChildrens) {
+    traversalStack.push(c);
   }
 }
 
@@ -122,20 +130,31 @@ Visibility KdTree::computeVisibility() {
 void KdTree::renderModels(ShaderProgram &basicProgram) const {
   for (auto &e : mElements) {
     basicProgram.setUniformMatrix4f("model", e->getModelMatrix());
-    e->render();
+    e->renderBoundinBox();
   }
 }
 
-void KdTree::render(ShaderProgram &basicProgram) const {
-  for (auto &c : mChildrens) {
-    c.render(basicProgram);
+void KdTree::render(ShaderProgram &basicProgram, int level) const {
+  for (auto c : mChildrens) {
+    c->render(basicProgram, level);
   }
-  basicProgram.setUniform4f("color", 0.0f, 1.0f, 0.0f, 1.0f);
-  basicProgram.setUniformMatrix4f("model", mElementsAABB.getModelMatrix());
-  mElementsAABB.render();
-  basicProgram.setUniform4f("color", 1.0f, 0.0f, 0.0f, 1.0f);
-  basicProgram.setUniformMatrix4f("model", mGlobalAABB.getModelMatrix());
-  mGlobalAABB.render();
+  if (mFather != nullptr) {
+    Debug::print("mFather");
+    Debug::print(mLevel);
+    cerr << "father point:" << mFather << " bool:" << (mFather == nullptr)
+         << std::endl;
+    auto f = *mFather;
+    Debug::print(f);
+  }
+
+  if (level == (MAX_DEEP + 1) || level == mLevel) {
+    basicProgram.setUniform4f("color", 0.0f, 1.0f, 0.0f, 1.0f);
+    basicProgram.setUniformMatrix4f("model", mElementsAABB.getModelMatrix());
+    mElementsAABB.render();
+    basicProgram.setUniform4f("color", 1.0f, 0.0f, 0.0f, 1.0f);
+    basicProgram.setUniformMatrix4f("model", mGlobalAABB.getModelMatrix());
+    mGlobalAABB.render();
+  }
 }
 
 void KdTree::nextFrame() {
@@ -148,14 +167,14 @@ void KdTree::nextFrame() {
       e->setOcclusion(false);
     }
   }
-  for (auto &c : mChildrens) {
-    c.nextFrame();
+  for (auto c : mChildrens) {
+    c->nextFrame();
   }
 }
 
 const Mesh &KdTree::getAABBMesh() const { return mGlobalAABB; }
 
-KdTree KdTree::getChildren(int i) const { return mChildrens[i]; }
+KdTree *KdTree::getChildren(int i) const { return mChildrens[i]; }
 int KdTree::getQttyChildrens() const { return mChildrens.size(); }
 const Mesh *KdTree::getElement(int i) const { return mElements[i]; }
 int KdTree::getQttyElements() const { return mElements.size(); }

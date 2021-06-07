@@ -26,9 +26,9 @@ void Player::keyEvent(int key, int specialkey, bool pressed) {
       vel.x = -0.001f;
     } else if (key == 'a') {
       vel.x = 0.001f;
-    } else if (key == 'p') {
+    } else if (key == ' ') {
       vel.y = -0.001f;
-    } else if (key == 'u') {
+    } else if (key == 'c') {
       vel.y = 0.001f;
     }
   } else {
@@ -40,9 +40,9 @@ void Player::keyEvent(int key, int specialkey, bool pressed) {
       vel.x = 0.0f;
     } else if (key == 'a') {
       vel.x = 0.0f;
-    } else if (key == 'p') {
+    } else if (key == ' ') {
       vel.y = 0.0f;
-    } else if (key == 'u') {
+    } else if (key == 'c') {
       vel.y = 0.0f;
     }
   }

@@ -1,6 +1,7 @@
 #include "Debug.h"
 #include "PLYReader.h"
 #include <cstring>
+#include <iostream>
 #include <vector>
 
 bool PLYReader::readMesh(const string &filename, TriangleMesh &mesh) {

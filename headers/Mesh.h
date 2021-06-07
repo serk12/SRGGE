@@ -24,7 +24,7 @@ public:
   bool isInsideFrustum() const;
   void setOcclusion(bool occluded);
   bool isVisible();
-  bool addToKdTree() const;
+  bool canAddToKdTree() const;
   void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
 

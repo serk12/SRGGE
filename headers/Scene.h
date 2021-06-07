@@ -12,6 +12,17 @@
 // It is responsible for updating and render them.
 enum CullingMethod { NONE = 0, VIEW = 1, OCCLUSION = 2, ALL = 3 };
 
+struct Query {
+  KdTree *tree;
+  int qttyVisiblePixels;
+  GLuint queryID;
+  bool done;
+
+  Query(KdTree *tree);
+  bool getQuery();
+  void waitQuery();
+};
+
 class Scene {
 public:
   Scene();
@@ -37,30 +48,12 @@ private:
   void occlusionCullingSaW();
 
 private:
-  struct Query {
-    KdTree *tree;
-    int qttyVisiblePixels, queryID;
-    bool done;
-
-    Query(KdTree *tree, int id) {
-      tree = tree;
-      queryID = id;
-      qttyVisiblePixels = -1;
-      done = false;
-    }
-
-    bool getQuery() {
-      glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &qttyVisiblePixels);
-      done = true;
-      return done;
-    }
-  };
-
-  KdTree kdTree;
+  KdTree *kdTree;
   std::list<Mesh *> meshes;
   ShaderProgram basicProgram;
   Player player;
-  bool bPolygonFill;
+  int bKDTree;
+  bool bPolygonFill, bPolygonBB;
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
   CullingMethod cullingPolicy;

@@ -14,13 +14,16 @@ struct Visibility {
 
 class KdTree {
 public:
-  KdTree(int level = 0);
-  KdTree(const std::list<Mesh *> &elements, int level = 0);
+  KdTree(KdTree *father, int level);
+  ~KdTree();
+  KdTree(const std::list<Mesh *> &elements, KdTree *father = nullptr,
+         int level = 0);
   inline static const int VECT_SIZE = 2;
+  inline static int MAX_DEEP = 0;
   void deleteElement(const Mesh *mesh);
   void addElement(const Mesh *);
 
-  KdTree getChildren(int i) const;
+  KdTree *getChildren(int i) const;
   int getQttyChildrens() const;
   const Mesh *getElement(int i) const;
   int getQttyElements() const;
@@ -28,7 +31,7 @@ public:
   int getLevel() const;
   glm::vec3 getAxis() const;
 
-  void render(ShaderProgram &basicProgram) const;
+  void render(ShaderProgram &basicProgram, int level = 0) const;
 
   void pullUpVisibility();
   const Mesh &getAABBMesh() const;
@@ -39,7 +42,7 @@ public:
   void nextFrame();
 
 private:
-  std::vector<KdTree> mChildrens;
+  std::vector<KdTree *> mChildrens;
   std::vector<Mesh *> mElements;
   glm::vec3 mPoss;
   int mLevel;

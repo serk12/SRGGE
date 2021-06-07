@@ -21,7 +21,7 @@ void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
 bool Mesh::isVisible() { return mInsideFrustum && !mOccluded; }
 bool Mesh::isInsideFrustum() const { return mInsideFrustum; }
 
-bool Mesh::addToKdTree() const { return mName != TileMapLoader::GROUND; }
+bool Mesh::canAddToKdTree() const { return mName != TileMapLoader::GROUND; }
 
 void Mesh::setShaderProgram(ShaderProgram *basicProgram) {
   msBasicProgram = basicProgram;
@@ -75,7 +75,11 @@ void Mesh::render() const {
   mModel->render();
 }
 
-void Mesh::renderBoundinBox() const { mBoundinBox->render(); }
+void Mesh::renderBoundinBox() const {
+  if (TileMapLoader::GROUND != mName) {
+    mBoundinBox->render();
+  }
+}
 
 inline Collision floatToCollision(float result) {
   if (result == 0.0f) {

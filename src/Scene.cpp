@@ -10,6 +10,36 @@
 #include "TileMapLoader.h"
 #include <GL/glut.h>
 
+Query::Query(KdTree *t) {
+  GLuint queries[1];
+  glGenQueries(1, queries);
+  tree = t;
+  queryID = queries[0];
+  qttyVisiblePixels = -1;
+  done = false;
+}
+
+bool Query::getQuery() {
+  GLint i_done;
+  glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &i_done);
+  done = i_done == GL_TRUE;
+  if (done) {
+    glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &qttyVisiblePixels);
+  }
+  return done;
+}
+
+void Query::waitQuery() {
+  if (done)
+    return;
+  while (!done) {
+    GLint i_done;
+    glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &i_done);
+    done = i_done == GL_TRUE;
+  }
+  glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &qttyVisiblePixels);
+}
+
 Scene::Scene() {}
 
 Scene::~Scene() {
@@ -22,7 +52,9 @@ Scene::~Scene() {
 void Scene::init(const std::string &fn, CullingMethod cm) {
   cullingPolicy = cm;
   bPolygonFill = true;
+  bPolygonBB = false;
   filename = fn;
+  bKDTree = -1;
   basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");
   Mesh::setShaderProgram(&basicProgram);
   player.init();
@@ -45,7 +77,7 @@ void Scene::loadMesh() {
     next_pos.z = (int(next_pos.z) + int(next_pos.x == 0));
   } else {
     // this should not happen
-    std::cerr << "filename is a txt" << std::endl;
+    Debug::error("filename is a txt");
   }
 }
 
@@ -63,7 +95,7 @@ void Scene::loadTileMap() {
     }
     ++i;
   }
-  kdTree = KdTree(meshes);
+  kdTree = new KdTree(meshes);
 }
 
 void Scene::unloadMesh() {
@@ -91,57 +123,71 @@ bool Scene::viewCulling(const Mesh &mesh) {
 
 // https://www.mbsoftworks.sk/tutorials/opengl3/27-occlusion-query/
 void Scene::occlusionCullingSaW() {
-  int id = 0;
+  GLuint queries[meshes.size()];
+  glGenQueries(meshes.size(), queries);
+  unsigned int i = 0;
   for (auto &mesh : meshes) {
-    if (cullingPolicy == OCCLUSION || mesh->isInsideFrustum()) {
+    if (mesh->canAddToKdTree() &&
+        (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
       basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
-      glBeginQuery(GL_SAMPLES_PASSED, id);
+      glBeginQuery(GL_SAMPLES_PASSED, queries[i]);
       mesh->renderBoundinBox();
       glEndQuery(GL_SAMPLES_PASSED);
+    }
+    ++i;
+  }
+  i = 0;
+  for (auto &mesh : meshes) {
+    if (mesh->canAddToKdTree() &&
+        (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
+      int done = 0;
+      while (!done) {
+        glGetQueryObjectiv(queries[i], GL_QUERY_RESULT_AVAILABLE, &done);
+      }
       int result = -1;
-      glGetQueryObjectiv(id, GL_QUERY_RESULT, &result);
+      glGetQueryObjectiv(queries[i], GL_QUERY_RESULT, &result);
       if (result == -1) {
-        Debug::print("S&W Occlusion query ERROR");
+        Debug::error("S&W Occlusion query ERROR");
       }
       mesh->setOcclusion(result < VISIBLE_PIXELS_THRESHOLD);
-      ++id;
     }
+    ++i;
   }
 }
 
 void Scene::occlusionCulling() {
   std::stack<KdTree *> traversalStack;
   std::queue<Query *> queryQueue;
-  int qttyQueries = 0;
-  traversalStack.push(&kdTree);
+
+  traversalStack.push(kdTree);
   while (!traversalStack.empty() || !queryQueue.empty()) {
     while (!queryQueue.empty() &&
            (queryQueue.front()->getQuery() || traversalStack.empty())) {
+      queryQueue.front()->waitQuery();
       auto query = queryQueue.front();
       queryQueue.pop();
       if (query->qttyVisiblePixels == -1) {
-        Debug::print("kdtree Occlusion query ERROR");
-      }
-      if (query->qttyVisiblePixels > VISIBLE_PIXELS_THRESHOLD) {
+        Debug::error("kdtree Occlusion query ERROR");
+      } else if (query->qttyVisiblePixels > VISIBLE_PIXELS_THRESHOLD) {
         query->tree->pullUpVisibility();
         query->tree->traverseNode(traversalStack, basicProgram);
       }
       delete query;
     }
     if (!traversalStack.empty()) {
-      auto tree = traversalStack.top();
+      auto next_tree = traversalStack.top();
       traversalStack.pop();
-      if (viewCulling(tree->getAABBMesh())) {
-        Visibility visibility = tree->computeVisibility();
+      if (cullingPolicy == OCCLUSION || viewCulling(next_tree->getAABBMesh())) {
+        auto t = *next_tree;
+        Visibility visibility = next_tree->computeVisibility();
         if (visibility.wasVisible) {
-          tree->traverseNode(traversalStack, basicProgram);
+          next_tree->traverseNode(traversalStack, basicProgram);
         }
         if (!visibility.opened) {
-          auto *newQuery = new Query(tree, qttyQueries);
-          glBeginQuery(GL_SAMPLES_PASSED, qttyQueries);
-          tree->renderModels(basicProgram);
+          auto *newQuery = new Query(next_tree);
+          glBeginQuery(GL_SAMPLES_PASSED, newQuery->queryID);
+          newQuery->tree->renderModels(basicProgram);
           glEndQuery(GL_SAMPLES_PASSED);
-          ++qttyQueries;
           queryQueue.push(newQuery);
         }
       }
@@ -168,7 +214,8 @@ void Scene::render() {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       glDepthMask(GL_FALSE);
-      occlusionCullingSaW();
+      // occlusionCullingSaW();
+      occlusionCulling();
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glDepthMask(GL_TRUE);
     }
@@ -193,16 +240,22 @@ void Scene::render() {
           glDisable(GL_POLYGON_OFFSET_FILL);
           basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
         }
-        mesh->render();
+        if (!bPolygonBB) {
+          mesh->render();
+        } else {
+          mesh->renderBoundinBox();
+        }
       }
     }
-    if (!bPolygonFill) {
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-      glDisable(GL_POLYGON_OFFSET_FILL);
-      basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
-      kdTree.render(basicProgram);
+    if (kdTree != nullptr) {
+      if (bKDTree >= 0 && bKDTree <= KdTree::MAX_DEEP + 1) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
+        kdTree->render(basicProgram, bKDTree);
+      }
+      kdTree->nextFrame();
     }
-    kdTree.nextFrame();
   }
 }
 
@@ -229,6 +282,19 @@ void Scene::keyEvent(int key, int specialkey, bool pressed) {
 
     if (specialkey == GLUT_KEY_F1) {
       bPolygonFill = !bPolygonFill;
+    }
+    if (specialkey == GLUT_KEY_F2) {
+      bPolygonBB = !bPolygonBB;
+    }
+    if (specialkey == GLUT_KEY_F4) {
+      bKDTree = (bKDTree + 1) % (KdTree::MAX_DEEP + 3);
+    }
+    if (specialkey == GLUT_KEY_F3) {
+      if (bKDTree <= KdTree::MAX_DEEP + 1) {
+        bKDTree = KdTree::MAX_DEEP + 2;
+      } else {
+        bKDTree = KdTree::MAX_DEEP + 1;
+      }
     }
   }
   player.keyEvent(key, specialkey, pressed);
