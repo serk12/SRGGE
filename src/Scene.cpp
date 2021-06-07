@@ -92,6 +92,13 @@ bool Scene::viewCulling(const Mesh &mesh) {
 void Scene::occlusionCulling() {
   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
   glDepthMask(GL_FALSE);
+  basicProgram.use();
+  basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
+  basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
+  basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
+  basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
   std::stack<KdTree *> traversalStack;
   std::queue<Query *> queryQueue;
   int qttyQueries = 0;
@@ -103,7 +110,7 @@ void Scene::occlusionCulling() {
       queryQueue.pop();
       if (query->qttyVisiblePixels > VISIBLE_PIXELS_THRESHOLD) {
         query->tree->pullUpVisibility();
-        query->tree->traverseNode(traversalStack);
+        query->tree->traverseNode(traversalStack, basicProgram);
       }
       delete query;
     }
@@ -113,13 +120,13 @@ void Scene::occlusionCulling() {
       if (viewCulling(tree->getAABBMesh())) {
         Visibility visibility = tree->computeVisibility();
         if (visibility.wasVisible) {
-          tree->traverseNode(traversalStack);
+          tree->traverseNode(traversalStack, basicProgram);
         }
         if (!visibility.opened) {
           auto *newQuery = new Query(tree, qttyQueries);
           // https://www.mbsoftworks.sk/tutorials/opengl3/27-occlusion-query/
           glBeginQuery(GL_SAMPLES_PASSED, qttyQueries);
-          tree->renderModels();
+          tree->renderModels(basicProgram);
           glEndQuery(GL_SAMPLES_PASSED);
           ++qttyQueries;
           queryQueue.push(newQuery);
@@ -134,7 +141,6 @@ void Scene::render() {
     bool view = cullingPolicy == ALL || cullingPolicy == VIEW;
     bool occluded = cullingPolicy == ALL || cullingPolicy == OCCLUSION;
     for (auto &mesh : meshes) {
-      mesh->resetOcclusion(view, occluded);
       if (view) {
         mesh->setInsideFrustum(viewCulling(*mesh));
       }
@@ -169,12 +175,10 @@ void Scene::render() {
       }
     }
     if (!bPolygonFill) {
-      glm::mat4 identiti = glm::mat4(1.0f);
-      basicProgram.setUniformMatrix4f("model", identiti);
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       glDisable(GL_POLYGON_OFFSET_FILL);
       basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
-      kdTree.render();
+      kdTree.render(basicProgram);
     }
     kdTree.nextFrame();
   }

@@ -12,18 +12,19 @@ public:
   Mesh(glm::vec3 pos = {0, 0, 0});
   Mesh(const std::string &name, glm::vec3 pos = {0, 0, 0});
 
-  glm::mat4 &getModelMatrix();
+  const glm::mat4 &getModelMatrix() const;
   const std::string &getName() const;
   glm::vec3 getPos() const;
   glm::vec3 getSize() const;
   glm::vec3 getMin() const;
 
-  void resetOcclusion(bool view, bool occluded);
+  TriangleMesh *getTriangleMesh() const { return mModel; }
+
   void setInsideFrustum(bool inside);
   void setOcclusion(bool occluded);
   bool isVisible();
   bool addToKdTree() const;
-  void buildCube(glm::vec3 pos, glm::vec3 size);
+  void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
 
   void render() const;

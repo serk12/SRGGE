@@ -30,6 +30,12 @@ public:
     std::cout << "vec3: " << v.x << " " << v.y << " " << v.z << std::endl;
   }
 
+  static void print(const std::vector<glm::vec3> &v) {
+    for (const auto &p : v) {
+      Debug::print(p);
+    }
+  }
+
   static void print(const Octree &o) {
     std::cout << "QTTY: " << o.getQtty() << " ELEMENTS: " << o.getQttyElements()
               << " SIZE: ";

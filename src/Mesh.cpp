@@ -15,14 +15,6 @@ void Mesh::loadMesh(const std::string &fn) {
     msNameToModel[fn] = mesh;
   }
 }
-void Mesh::resetOcclusion(bool view, bool occluded) {
-  if (view) {
-    mInsideFrustum = true;
-  }
-  if (mOccluded && addToKdTree()) {
-    mOccluded = false;
-  }
-}
 
 void Mesh::setInsideFrustum(bool inside) { mInsideFrustum = inside; }
 void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
@@ -61,9 +53,10 @@ Mesh::Mesh(const std::string &name, glm::vec3 pos) : Mesh(pos) {
 }
 void Mesh::buildCube(glm::vec3 pos, glm::vec3 size) {
   mModel->buildCube(pos, size);
+  mModel->sendToOpenGL(*msBasicProgram);
 }
 
-glm::mat4 &Mesh::getModelMatrix() { return mModelMatrix; }
+const glm::mat4 &Mesh::getModelMatrix() const { return mModelMatrix; }
 const std::string &Mesh::getName() const { return mName; }
 glm::vec3 Mesh::getPos() const { return mPos; }
 glm::vec3 Mesh::getSize() const { return mModel->getSize(); }

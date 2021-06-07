@@ -28,12 +28,13 @@ public:
   int getLevel() const;
   glm::vec3 getAxis() const;
 
-  void render() const;
+  void render(ShaderProgram &basicProgram) const;
 
   void pullUpVisibility();
   const Mesh &getAABBMesh() const;
-  void renderModels() const;
-  void traverseNode(std::stack<KdTree *> &traversalStack);
+  void renderModels(ShaderProgram &basicProgram) const;
+  void traverseNode(std::stack<KdTree *> &traversalStack,
+                    ShaderProgram &basicProgram);
   Visibility computeVisibility();
   void nextFrame();
 

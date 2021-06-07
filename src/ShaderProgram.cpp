@@ -109,7 +109,7 @@ void ShaderProgram::setUniform4f(const string &uniformName, float v0, float v1,
 }
 
 void ShaderProgram::setUniformMatrix3f(const string &uniformName,
-                                       glm::mat3 &mat) {
+                                       const glm::mat3 &mat) {
   GLint location = glGetUniformLocation(programId, uniformName.c_str());
 
   if (location != -1)
@@ -117,7 +117,7 @@ void ShaderProgram::setUniformMatrix3f(const string &uniformName,
 }
 
 void ShaderProgram::setUniformMatrix4f(const string &uniformName,
-                                       glm::mat4 &mat) {
+                                       const glm::mat4 &mat) {
   GLint location = glGetUniformLocation(programId, uniformName.c_str());
 
   if (location != -1)

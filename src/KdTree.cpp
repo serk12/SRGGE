@@ -66,20 +66,26 @@ KdTree::KdTree(const std::list<Mesh *> &elements, int level) : KdTree(level) {
         mChildrens.push_back(two);
         for (const auto &e : mid) {
           mElements.push_back(e);
-          mElementsAABB.buildCube(e->getPos(), e->getSize());
+          mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
+                                  e->getSize());
         }
-        mGlobalAABB = Mesh(mElementsAABB.getMin());
-        mGlobalAABB.buildCube({0, 0, 0}, mElementsAABB.getSize());
       }
     }
     if (!correct) {
       for (const auto &e : elements) {
         mElements.push_back(e);
+        mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
+                                e->getSize());
       }
     }
   } else if (size == 1) {
-    mElements.push_back(*elements.begin());
+    auto *e = *elements.begin();
+    mElements.push_back(e);
+    mElementsAABB.buildCube(e->getPos() + glm::vec3({-0.5, -0.5, -0.5}),
+                            e->getSize());
   }
+  mGlobalAABB = Mesh(mElementsAABB.getMin());
+  mGlobalAABB.buildCube({0, 0, 0}, mElementsAABB.getSize());
 }
 
 void KdTree::pullUpVisibility() {
@@ -93,9 +99,10 @@ void KdTree::pullUpVisibility() {
     }
   }
 }
-void KdTree::traverseNode(std::stack<KdTree *> &traversalStack) {
+void KdTree::traverseNode(std::stack<KdTree *> &traversalStack,
+                          ShaderProgram &basicProgram) {
   // because we have "middle" objects we render always
-  renderModels();
+  renderModels(basicProgram);
   for (auto &c : mChildrens) {
     traversalStack.push(&c);
   }
@@ -103,28 +110,44 @@ void KdTree::traverseNode(std::stack<KdTree *> &traversalStack) {
 
 Visibility KdTree::computeVisibility() {
   Visibility result;
-  result.wasVisible = mVisible && (mLastFrameVisible == OCCLUDED_FRAMES - 1);
+  result.wasVisible = mVisible && (mLastFrameVisible == (OCCLUDED_FRAMES - 1));
   result.opened = result.wasVisible && !isLeaf();
   mVisible = false;
+  for (auto &e : mElements) {
+    e->setOcclusion(true);
+  }
   return result;
 }
 
-void KdTree::renderModels() const {
+void KdTree::renderModels(ShaderProgram &basicProgram) const {
   for (auto &e : mElements) {
+    basicProgram.setUniformMatrix4f("model", e->getModelMatrix());
     e->render();
   }
 }
 
-void KdTree::render() const {
+void KdTree::render(ShaderProgram &basicProgram) const {
   for (auto &c : mChildrens) {
-    c.render();
+    c.render(basicProgram);
   }
+  basicProgram.setUniform4f("color", 0.0f, 1.0f, 0.0f, 1.0f);
+  basicProgram.setUniformMatrix4f("model", mElementsAABB.getModelMatrix());
   mElementsAABB.render();
+  basicProgram.setUniform4f("color", 1.0f, 0.0f, 0.0f, 1.0f);
+  basicProgram.setUniformMatrix4f("model", mGlobalAABB.getModelMatrix());
   mGlobalAABB.render();
 }
 
 void KdTree::nextFrame() {
-  --mLastFrameVisible;
+  if (mLastFrameVisible > 0) {
+    --mLastFrameVisible;
+  }
+  if (mLastFrameVisible == 0) {
+    mVisible = true;
+    for (auto &e : mElements) {
+      e->setOcclusion(false);
+    }
+  }
   for (auto &c : mChildrens) {
     c.nextFrame();
   }
