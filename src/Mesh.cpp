@@ -19,6 +19,7 @@ void Mesh::loadMesh(const std::string &fn) {
 void Mesh::setInsideFrustum(bool inside) { mInsideFrustum = inside; }
 void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
 bool Mesh::isVisible() { return mInsideFrustum && !mOccluded; }
+bool Mesh::isInsideFrustum() const { return mInsideFrustum; }
 
 bool Mesh::addToKdTree() const { return mName != TileMapLoader::GROUND; }
 
@@ -41,6 +42,7 @@ Mesh::Mesh(glm::vec3 pos) {
   mModelMatrix = glm::mat4(1.0f);
   mModelMatrix = glm::translate(mModelMatrix, mPos);
   mGround = nullptr;
+  mBoundinBox = nullptr;
   mModel = new TriangleMesh();
 }
 
@@ -50,7 +52,11 @@ Mesh::Mesh(const std::string &name, glm::vec3 pos) : Mesh(pos) {
     mGround = getMesh(TileMapLoader::GROUND);
   }
   mModel = getMesh(name);
+  mBoundinBox = new TriangleMesh();
+  mBoundinBox->buildCube(mModel->getMin(), mModel->getSize());
+  mBoundinBox->sendToOpenGL(*msBasicProgram);
 }
+
 void Mesh::buildCube(glm::vec3 pos, glm::vec3 size) {
   mModel->buildCube(pos, size);
   mModel->sendToOpenGL(*msBasicProgram);
@@ -68,6 +74,8 @@ void Mesh::render() const {
   }
   mModel->render();
 }
+
+void Mesh::renderBoundinBox() const { mBoundinBox->render(); }
 
 inline Collision floatToCollision(float result) {
   if (result == 0.0f) {

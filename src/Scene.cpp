@@ -64,7 +64,6 @@ void Scene::loadTileMap() {
     ++i;
   }
   kdTree = KdTree(meshes);
-  Debug::print(kdTree);
 }
 
 void Scene::unloadMesh() {
@@ -89,16 +88,28 @@ bool Scene::viewCulling(const Mesh &mesh) {
   }
   return true;
 }
-void Scene::occlusionCulling() {
-  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-  glDepthMask(GL_FALSE);
-  basicProgram.use();
-  basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
-  basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
-  basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
-  basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+// https://www.mbsoftworks.sk/tutorials/opengl3/27-occlusion-query/
+void Scene::occlusionCullingSaW() {
+  int id = 0;
+  for (auto &mesh : meshes) {
+    if (cullingPolicy == OCCLUSION || mesh->isInsideFrustum()) {
+      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
+      glBeginQuery(GL_SAMPLES_PASSED, id);
+      mesh->renderBoundinBox();
+      glEndQuery(GL_SAMPLES_PASSED);
+      int result = -1;
+      glGetQueryObjectiv(id, GL_QUERY_RESULT, &result);
+      if (result == -1) {
+        Debug::print("S&W Occlusion query ERROR");
+      }
+      mesh->setOcclusion(result < VISIBLE_PIXELS_THRESHOLD);
+      ++id;
+    }
+  }
+}
+
+void Scene::occlusionCulling() {
   std::stack<KdTree *> traversalStack;
   std::queue<Query *> queryQueue;
   int qttyQueries = 0;
@@ -108,6 +119,9 @@ void Scene::occlusionCulling() {
            (queryQueue.front()->getQuery() || traversalStack.empty())) {
       auto query = queryQueue.front();
       queryQueue.pop();
+      if (query->qttyVisiblePixels == -1) {
+        Debug::print("kdtree Occlusion query ERROR");
+      }
       if (query->qttyVisiblePixels > VISIBLE_PIXELS_THRESHOLD) {
         query->tree->pullUpVisibility();
         query->tree->traverseNode(traversalStack, basicProgram);
@@ -124,7 +138,6 @@ void Scene::occlusionCulling() {
         }
         if (!visibility.opened) {
           auto *newQuery = new Query(tree, qttyQueries);
-          // https://www.mbsoftworks.sk/tutorials/opengl3/27-occlusion-query/
           glBeginQuery(GL_SAMPLES_PASSED, qttyQueries);
           tree->renderModels(basicProgram);
           glEndQuery(GL_SAMPLES_PASSED);
@@ -146,7 +159,16 @@ void Scene::render() {
       }
     }
     if (occluded) {
-      occlusionCulling();
+      basicProgram.use();
+      basicProgram.setUniformMatrix4f("projection",
+                                      player.getProjectionMatrix());
+      basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
+      basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
+      basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      glDepthMask(GL_FALSE);
+      occlusionCullingSaW();
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glDepthMask(GL_TRUE);
     }

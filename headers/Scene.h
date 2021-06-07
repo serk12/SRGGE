@@ -34,6 +34,7 @@ private:
   void loadTileMap();
   bool viewCulling(const Mesh &mesh);
   void occlusionCulling();
+  void occlusionCullingSaW();
 
 private:
   struct Query {
@@ -44,7 +45,7 @@ private:
     Query(KdTree *tree, int id) {
       tree = tree;
       queryID = id;
-      qttyVisiblePixels = 0;
+      qttyVisiblePixels = -1;
       done = false;
     }
 
@@ -63,7 +64,7 @@ private:
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
   CullingMethod cullingPolicy;
-  inline static const int VISIBLE_PIXELS_THRESHOLD = 80;
+  inline static const int VISIBLE_PIXELS_THRESHOLD = 20;
 };
 
 #endif // _SCENE_INCLUDE

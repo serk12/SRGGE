@@ -21,6 +21,7 @@ public:
   TriangleMesh *getTriangleMesh() const { return mModel; }
 
   void setInsideFrustum(bool inside);
+  bool isInsideFrustum() const;
   void setOcclusion(bool occluded);
   bool isVisible();
   bool addToKdTree() const;
@@ -28,6 +29,7 @@ public:
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
 
   void render() const;
+  void renderBoundinBox() const;
 
   static void setShaderProgram(ShaderProgram *msBasicProgram);
 
@@ -38,6 +40,7 @@ private:
   inline static ShaderProgram *msBasicProgram = nullptr;
   TriangleMesh *mGround;
   TriangleMesh *mModel;
+  TriangleMesh *mBoundinBox;
   std::string mName;
 
   glm::mat4 mModelMatrix;
