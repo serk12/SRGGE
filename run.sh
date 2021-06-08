@@ -63,7 +63,7 @@ esac
 # build
 case $COMMAND in
 "install")
-    echo "plis install git, cmake and Freetype"
+    echo "requirements: git, cmake and Freetype"
     echo "project-installing: TinyPly"
     git submodule init
     git submodule update
@@ -71,7 +71,8 @@ case $COMMAND in
     cd ./libs/tinyply/tmp/build
     cmake ../../
     make
-    echo "if tinyply gives errors plis try 'sudo make install'"
+    echo "if tinyply gives errors try 'sudo make install'"
+    echo "example: https://github.com/markcox80/tinyply-cmake"
     ;;
 "models")
     ls -l --block-size=M --sort=size ../models/*.ply
