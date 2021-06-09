@@ -5,6 +5,7 @@
 #include "TriangleMesh.h"
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <map>
 #include <set>
 #include <tinyply.h>
@@ -13,6 +14,8 @@
 // https://gist.github.com/Aatch/8466307
 // https://users.csc.calpoly.edu/~zwood/teaching/csc570/final06/jseeba/
 // https://www.alecjacobson.com/weblog/?tag=quadric-error-metric
+
+bool CalcLOD::USE_QEM = true;
 
 using namespace tinyply;
 
@@ -61,26 +64,83 @@ void cubize(const Octree &octree, TriangleMesh &mesh, int level,
   }
 }
 
-void midSimplify(const Octree &octree, TriangleMesh &mesh,
-                 std::map<int, int> &oldVertexToNew, int actualLevel,
-                 int level) {
+Eigen::Vector4d plane_vector(const Eigen::Vector3f &A, const Eigen::Vector3f &B,
+                             const Eigen::Vector3f &C) {
+  auto ab = B - A;
+  auto ac = C - A;
+  auto normal = ab.cross(ac).normalized();
+  float d = (-A).dot(normal);
+  return Eigen::Vector4d(normal[0], normal[1], normal[2], d);
+}
+
+Eigen::Matrix4d calculate_quadric(int index, const TriangleMesh &mesh) {
+  Eigen::Matrix4d q = Eigen::Matrix4d::Zero();
+  for (const auto &face : mesh.getFacesByVertex(index)) {
+    auto plane = plane_vector(
+        Eigen::Vector3f(face.vertex0[0], face.vertex0[1], face.vertex0[2]),
+        Eigen::Vector3f(face.vertex1[0], face.vertex1[1], face.vertex1[2]),
+        Eigen::Vector3f(face.vertex2[0], face.vertex2[1], face.vertex2[2]));
+    Eigen::Matrix4d kp = plane * plane.transpose();
+    q += kp;
+  }
+  return q;
+}
+
+void recursiveSimplify(const Octree &octree, TriangleMesh &mesh,
+                       std::map<int, int> &oldVertexToNew, int actualLevel,
+                       int level, const std::vector<Eigen::Matrix4d> &errors) {
   if (octree.getQttyChildrens() > 0 && actualLevel < level) {
     for (unsigned int i = 0; i < Octree::VECT_SIZE; ++i) {
-      midSimplify(octree.getChildren(i), mesh, oldVertexToNew, actualLevel + 1,
-                  level);
+      recursiveSimplify(octree.getChildren(i), mesh, oldVertexToNew,
+                        actualLevel + 1, level, errors);
     }
   } else if (octree.getQttyElements() > 0) {
     int size = octree.getQttyElements();
-    glm::vec3 vertex(0.0f);
     for (unsigned int i = 0; i < size; ++i) {
-      if (CalcLOD::USE_QEM) {
-      } else {
-        vertex += octree.getElementVec(i);
-      }
       oldVertexToNew[octree.getElementIndex(i)] = mesh.getVerticesSize();
     }
+    glm::vec3 vertex(0.0f);
     if (CalcLOD::USE_QEM) {
+      Eigen::Matrix4d error = Eigen::Matrix4d::Zero();
+      Eigen::Vector4d vt;
+      for (unsigned int i = 0; i < size; ++i) {
+        error += errors[octree.getElementIndex(i)];
+      }
+      if (error.determinant() != 0.0f) {
+        auto qt = error;
+        qt(3, 0) = qt(3, 1) = qt(3, 2) = 0;
+        qt(3, 3) = 1;
+        vt = qt.inverse() * Eigen::Vector4d(0, 0, 0, 1);
+      } else {
+        float err = -1;
+        Eigen::Vector3f mean = Eigen::Vector3f::Zero();
+        for (unsigned int i = 0; i < size; ++i) {
+          Eigen::Vector4d edge(octree.getElementVec(i)[0],
+                               octree.getElementVec(i)[1],
+                               octree.getElementVec(i)[2], 1.0f);
+          mean += Eigen::Vector3f(octree.getElementVec(i)[0],
+                                  octree.getElementVec(i)[1],
+                                  octree.getElementVec(i)[2]);
+
+          Eigen::Vector4d meanEdge(mean[0] / (i + 1), mean[1] / (i + 1),
+                                   mean[2] / (i + 1), 1.0f);
+          float current = edge.transpose() * error * edge;
+          float meanCurrent = meanEdge.transpose() * error * meanEdge;
+          if (current < err || err == -1) {
+            err = current;
+            vt = edge;
+          }
+          if (meanCurrent < err) {
+            err = meanCurrent;
+            vt = meanEdge;
+          }
+        }
+      }
+      vertex = glm::vec3(vt[0] / vt[3], vt[1] / vt[3], vt[2] / vt[3]);
     } else {
+      for (unsigned int i = 0; i < size; ++i) {
+        vertex += octree.getElementVec(i);
+      }
       vertex /= size;
     }
     mesh.addVertex(vertex);
@@ -91,7 +151,14 @@ void simplify(Octree &octree, const TriangleMesh &old_mesh,
               TriangleMesh &new_mesh, int level) {
   octree.cut(level);
   std::map<int, int> oldVertexToNew;
-  midSimplify(octree, new_mesh, oldVertexToNew, 0, level);
+  std::vector<Eigen::Matrix4d> errors;
+  if (CalcLOD::USE_QEM) {
+    errors = std::vector<Eigen::Matrix4d>(old_mesh.getVerticesSize());
+    for (unsigned int i = 0; i < old_mesh.getVerticesSize(); ++i) {
+      errors[i] = calculate_quadric(i, old_mesh);
+    }
+  }
+  recursiveSimplify(octree, new_mesh, oldVertexToNew, 0, level, errors);
   std::set<int3> triangles;
   for (const auto &tri : old_mesh.getTriangles()) {
     int x = oldVertexToNew[tri.x];

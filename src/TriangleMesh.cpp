@@ -14,6 +14,30 @@ vector<float3> TriangleMesh::exportVertices() const {
   return result;
 }
 
+vector<Face> TriangleMesh::getFacesByVertex(int i) const {
+  vector<Face> result;
+  for (unsigned int j = 0; j < triangles.size(); ++j) {
+    if (triangles[j] == i) {
+      Face face;
+      if (j % 3 == 0) {
+        face.vertex0 = vertices[triangles[j]];
+        face.vertex1 = vertices[triangles[j + 1]];
+        face.vertex2 = vertices[triangles[j + 2]];
+      } else if (j % 3 == 1) {
+        face.vertex0 = vertices[triangles[j - 1]];
+        face.vertex1 = vertices[triangles[j]];
+        face.vertex2 = vertices[triangles[j + 1]];
+      } else {
+        face.vertex0 = vertices[triangles[j - 2]];
+        face.vertex1 = vertices[triangles[j - 1]];
+        face.vertex2 = vertices[triangles[j]];
+      }
+      result.push_back(face);
+    }
+  }
+  return result;
+}
+
 int TriangleMesh::getVerticesSize() const { return vertices.size(); }
 int TriangleMesh::getTriangleSize() const { return triangles.size() / 3; }
 

@@ -3,11 +3,10 @@
 
 #include <string>
 
-class CalcLOD {
-public:
+struct CalcLOD {
   CalcLOD(int argc, char **argv);
+  static bool USE_QEM;
   inline static int LOD_LEVEL = 0;
-  inline static bool USE_QEM = true;
   inline static std::string OUTPUT_FILE = "./models/testing-binary.ply";
 };
 
