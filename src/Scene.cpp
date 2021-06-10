@@ -10,6 +10,8 @@
 #include "TileMapLoader.h"
 #include <GL/glut.h>
 
+const int Scene::VISIBLE_PIXELS_THRESHOLD = 3000;
+
 Query::Query(KdTree *t) {
   GLuint queries[1];
   glGenQueries(1, queries);
@@ -168,7 +170,7 @@ void Scene::occlusionCulling() {
       queryQueue.pop();
       if (query->qttyVisiblePixels == -1) {
         Debug::error("kdtree Occlusion query ERROR");
-      } else if (query->qttyVisiblePixels > VISIBLE_PIXELS_THRESHOLD) {
+      } else if (query->qttyVisiblePixels < VISIBLE_PIXELS_THRESHOLD) {
         query->tree->pullUpVisibility();
         query->tree->traverseNode(traversalStack, basicProgram);
       }
@@ -193,6 +195,7 @@ void Scene::occlusionCulling() {
       }
     }
   }
+  kdTree->nextFrame();
 }
 
 void Scene::render() {
@@ -203,21 +206,6 @@ void Scene::render() {
       if (view) {
         mesh->setInsideFrustum(viewCulling(*mesh));
       }
-    }
-    if (occluded) {
-      basicProgram.use();
-      basicProgram.setUniformMatrix4f("projection",
-                                      player.getProjectionMatrix());
-      basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
-      basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
-      basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-      glDepthMask(GL_FALSE);
-      // occlusionCullingSaW();
-      occlusionCulling();
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      glDepthMask(GL_TRUE);
     }
 
     basicProgram.use();
@@ -247,6 +235,16 @@ void Scene::render() {
         }
       }
     }
+
+    if (occluded) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      glDepthMask(GL_FALSE);
+      occlusionCullingSaW();
+      // occlusionCulling();
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glDepthMask(GL_TRUE);
+    }
     if (kdTree != nullptr) {
       if (bKDTree >= 0 && bKDTree <= KdTree::MAX_DEEP + 1) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -254,7 +252,6 @@ void Scene::render() {
         basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
         kdTree->render(basicProgram, bKDTree);
       }
-      kdTree->nextFrame();
     }
   }
 }

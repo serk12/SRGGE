@@ -21,7 +21,9 @@ void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
 bool Mesh::isVisible() { return mInsideFrustum && !mOccluded; }
 bool Mesh::isInsideFrustum() const { return mInsideFrustum; }
 
-bool Mesh::canAddToKdTree() const { return mName != TileMapLoader::GROUND; }
+bool Mesh::canAddToKdTree() const {
+  return mName != TileMapLoader::GROUND && mName != TileMapLoader::WALL;
+}
 
 void Mesh::setShaderProgram(ShaderProgram *basicProgram) {
   msBasicProgram = basicProgram;

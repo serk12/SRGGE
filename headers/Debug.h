@@ -9,6 +9,7 @@
 
 struct Debug {
   static void error(const std::string &s);
+  static void info(const std::string &s);
   static void print(const TileRowModels &t);
   static void print(const TileMapModels &t);
   static void print(const glm::vec3 &v);

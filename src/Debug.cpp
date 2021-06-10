@@ -4,6 +4,8 @@ void Debug::error(const std::string &s) {
   std::cerr << "ERROR: " << s << std::endl;
 }
 
+void Debug::info(const std::string &s) { std::cout << s << std::endl; }
+
 void Debug::print(const TileRowModels &t) {
   for (auto s : t) {
     std::cout << s << " ";

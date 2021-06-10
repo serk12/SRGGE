@@ -49,11 +49,9 @@ bool PLYReader::loadHeader(ifstream &fin, int &nVertices, int &nFaces) {
   if (nVertices <= 0)
     return false;
 
-  cout << "Loading triangle mesh" << endl;
-  cout << "\tVertices = " << nVertices << endl;
-  cout << "\tFaces = " << nFaces << endl;
-  cout << endl;
-
+  Debug::info(std::string("Loading triangle mesh\n\tVertices = ") +
+              std::to_string(nVertices) + std::string("\n\tFaces = ") +
+              std::to_string(nFaces));
   return true;
 }
 

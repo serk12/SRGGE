@@ -11,15 +11,14 @@ bool TextRender::init() {
   FT_Library ft;
   // All functions return a value different than 0 whenever an error occurred
   if (FT_Init_FreeType(&ft)) {
-    std::cout << "ERROR::FREETYPE: Could not init FreeType Library"
-              << std::endl;
+    Debug::error("ERROR::FREETYPE: Could not init FreeType Library");
     return false;
   }
 
   // load font as face
   FT_Face face;
   if (FT_New_Face(ft, "resources/arial.ttf", 0, &face)) {
-    std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+    Debug::error("ERROR::FREETYPE: Failed to load font");
     return false;
   } else {
     // set size to load glyphs as
@@ -32,7 +31,7 @@ bool TextRender::init() {
     for (unsigned char c = 0; c < 128; c++) {
       // Load character glyph
       if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-        std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+        Debug::error("ERROR::FREETYTPE: Failed to load Glyph");
         continue;
       }
       // generate texture

@@ -2,6 +2,8 @@
 
 #include "Debug.h"
 
+const int KdTree::OCCLUDED_FRAMES = 8;
+
 namespace Axis {
 inline static const int DIM = 3;
 inline static const glm::vec3 Z = {0.0f, 0.0f, 1.0f};
@@ -26,8 +28,6 @@ KdTree::~KdTree() {}
 KdTree::KdTree(KdTree *father, int level)
     : mLevel(level), mPoss(0.0f), mFather(father), mElementsAABB(),
       mGlobalAABB() {
-  cerr << "father point:" << mFather << " bool:" << (mFather == nullptr)
-       << std::endl;
   if (level > MAX_DEEP)
     MAX_DEEP = level;
 }
@@ -138,15 +138,6 @@ void KdTree::render(ShaderProgram &basicProgram, int level) const {
   for (auto c : mChildrens) {
     c->render(basicProgram, level);
   }
-  if (mFather != nullptr) {
-    Debug::print("mFather");
-    Debug::print(mLevel);
-    cerr << "father point:" << mFather << " bool:" << (mFather == nullptr)
-         << std::endl;
-    auto f = *mFather;
-    Debug::print(f);
-  }
-
   if (level == (MAX_DEEP + 1) || level == mLevel) {
     basicProgram.setUniform4f("color", 0.0f, 1.0f, 0.0f, 1.0f);
     basicProgram.setUniformMatrix4f("model", mElementsAABB.getModelMatrix());

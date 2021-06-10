@@ -17,23 +17,23 @@ void ShaderProgram::initShaders(const std::string &vs, const std::string &fs) {
   const char *vertShader = vs.c_str();
   vShader.initFromFile(VERTEX_SHADER, vertShader);
   if (!vShader.isCompiled()) {
-    cout << "Vertex Shader Error" << endl;
-    cout << "" << vShader.log() << endl << endl;
+    Debug::error(std::string("Vertex Shader Error\n") + vShader.log() +
+                 std::string("\n\n"));
   }
 
   const char *fragShader = fs.c_str();
   fShader.initFromFile(FRAGMENT_SHADER, fragShader);
   if (!fShader.isCompiled()) {
-    cout << "Fragment Shader Error" << endl;
-    cout << "" << fShader.log() << endl << endl;
+    Debug::error(std::string("Fragment Shader Error\n") + fShader.log() +
+                 std::string("\n\n"));
   }
   this->init();
   this->addShader(vShader);
   this->addShader(fShader);
   this->link();
   if (!this->isLinked()) {
-    cout << "Shader Linking Error" << endl;
-    cout << "" << this->log() << endl << endl;
+    Debug::error(std::string("Shader Linking Error\n") + this->log() +
+                 std::string("\n\n"));
   }
   this->bindFragmentOutput("outColor");
   vShader.free();

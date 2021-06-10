@@ -57,7 +57,7 @@ private:
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
   CullingMethod cullingPolicy;
-  inline static const int VISIBLE_PIXELS_THRESHOLD = 20;
+  static const int VISIBLE_PIXELS_THRESHOLD;
 };
 
 #endif // _SCENE_INCLUDE

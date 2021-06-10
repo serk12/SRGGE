@@ -29,7 +29,7 @@ do
         INPUT_FILE="models/${key}.ply"
         DEFAULT_MODEL="models/${key}.ply"
         ;;
-        +(small_museum|big_grid))
+        +(big_museum|small_museum|big_grid|small_grid))
         INPUT_FILE="resources/${key}.txt"
         DEFAULT_TAILMAP="resources/${key}.txt"
         ;;

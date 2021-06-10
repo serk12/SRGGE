@@ -53,7 +53,7 @@ private:
   KdTree *mFather;
   int mLastFrameVisible;
   bool mVisible;
-  inline static const int OCCLUDED_FRAMES = 8;
+  static const int OCCLUDED_FRAMES;
 };
 
 #endif
