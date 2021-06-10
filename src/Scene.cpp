@@ -10,7 +10,7 @@
 #include "TileMapLoader.h"
 #include <GL/glut.h>
 
-const int Scene::VISIBLE_PIXELS_THRESHOLD = 3000;
+const int Scene::VISIBLE_PIXELS_THRESHOLD = 200;
 
 Query::Query(KdTree *t) {
   GLuint queries[1];
@@ -140,7 +140,7 @@ void Scene::occlusionCullingSaW() {
   }
   i = 0;
   for (auto &mesh : meshes) {
-    if (mesh->canAddToKdTree() &&
+    if (mesh->canAddToKdTree() && mesh->stillVisible() &&
         (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
       int done = 0;
       while (!done) {
@@ -216,23 +216,21 @@ void Scene::render() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     for (auto &mesh : meshes) {
-      if (mesh->isVisible()) {
-        basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
-        if (!bPolygonFill) {
-          basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
-          glEnable(GL_POLYGON_OFFSET_FILL);
-          glPolygonOffset(0.5f, 1.0f);
-          glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-          mesh->render();
-          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-          glDisable(GL_POLYGON_OFFSET_FILL);
-          basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
-        }
-        if (!bPolygonBB) {
-          mesh->render();
-        } else {
-          mesh->renderBoundinBox();
-        }
+      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
+      if (!bPolygonFill) {
+        basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(0.5f, 1.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        mesh->render();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
+      }
+      if (!bPolygonBB) {
+        mesh->render();
+      } else {
+        mesh->renderBoundinBox();
       }
     }
 
@@ -248,7 +246,6 @@ void Scene::render() {
     if (kdTree != nullptr) {
       if (bKDTree >= 0 && bKDTree <= KdTree::MAX_DEEP + 1) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDisable(GL_POLYGON_OFFSET_FILL);
         basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
         kdTree->render(basicProgram, bKDTree);
       }

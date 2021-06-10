@@ -3,6 +3,8 @@
 #include "Debug.h"
 #include "PLYReader.h"
 
+const int Mesh::OCCLUDED_FRAMES = 4;
+
 void Mesh::loadMesh(const std::string &fn) {
   TriangleMesh *mesh = new TriangleMesh();
   PLYReader reader;
@@ -17,13 +19,28 @@ void Mesh::loadMesh(const std::string &fn) {
 }
 
 void Mesh::setInsideFrustum(bool inside) { mInsideFrustum = inside; }
-void Mesh::setOcclusion(bool occluded) { mOccluded = occluded; }
-bool Mesh::isVisible() { return mInsideFrustum && !mOccluded; }
+void Mesh::setOcclusion(bool occluded) {
+  mOccluded = occluded;
+  if (occluded) {
+    mLastFrameVisible = OCCLUDED_FRAMES;
+  }
+}
+
+bool Mesh::stillVisible() {
+  if (mName == TileMapLoader::WALL || mName == TileMapLoader::GROUND) {
+    return false;
+  }
+  if (mLastFrameVisible > 0) {
+    --mLastFrameVisible;
+    return false;
+  }
+  return true;
+}
+
+bool Mesh::isVisible() const { return mInsideFrustum && !mOccluded; }
 bool Mesh::isInsideFrustum() const { return mInsideFrustum; }
 
-bool Mesh::canAddToKdTree() const {
-  return mName != TileMapLoader::GROUND && mName != TileMapLoader::WALL;
-}
+bool Mesh::canAddToKdTree() const { return mName != TileMapLoader::GROUND; }
 
 void Mesh::setShaderProgram(ShaderProgram *basicProgram) {
   msBasicProgram = basicProgram;
@@ -74,7 +91,10 @@ void Mesh::render() const {
   if (mGround != nullptr) {
     mGround->render();
   }
-  mModel->render();
+  if (isVisible() || mName == TileMapLoader::WALL ||
+      mName == TileMapLoader::GROUND) {
+    mModel->render();
+  }
 }
 
 void Mesh::renderBoundinBox() const {

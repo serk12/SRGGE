@@ -23,7 +23,8 @@ public:
   void setInsideFrustum(bool inside);
   bool isInsideFrustum() const;
   void setOcclusion(bool occluded);
-  bool isVisible();
+  bool stillVisible();
+  bool isVisible() const;
   bool canAddToKdTree() const;
   void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
@@ -38,6 +39,7 @@ private:
   static TriangleMesh *getMesh(const std::string &fn);
   inline static std::map<std::string, TriangleMesh *> msNameToModel;
   inline static ShaderProgram *msBasicProgram = nullptr;
+  static const int OCCLUDED_FRAMES;
   TriangleMesh *mGround;
   TriangleMesh *mModel;
   TriangleMesh *mBoundinBox;
@@ -45,6 +47,7 @@ private:
 
   glm::mat4 mModelMatrix;
   glm::vec3 mPos;
+  int mLastFrameVisible = 0;
   bool mInsideFrustum, mOccluded;
 };
 
