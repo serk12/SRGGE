@@ -57,6 +57,7 @@ void Scene::init(const std::string &fn, CullingMethod cm) {
   bPolygonBB = false;
   filename = fn;
   bKDTree = -1;
+  frame = 0;
   basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");
   Mesh::setShaderProgram(&basicProgram);
   player.init();
@@ -129,7 +130,7 @@ void Scene::occlusionCullingSaW() {
   glGenQueries(meshes.size(), queries);
   unsigned int i = 0;
   for (auto &mesh : meshes) {
-    if (mesh->canAddToKdTree() &&
+    if (mesh->canAddToKdTree() && mesh->stillVisible() &&
         (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
       basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
       glBeginQuery(GL_SAMPLES_PASSED, queries[i]);
@@ -170,7 +171,8 @@ void Scene::occlusionCulling() {
       queryQueue.pop();
       if (query->qttyVisiblePixels == -1) {
         Debug::error("kdtree Occlusion query ERROR");
-      } else if (query->qttyVisiblePixels < VISIBLE_PIXELS_THRESHOLD) {
+      } else if (query->qttyVisiblePixels >
+                 VISIBLE_PIXELS_THRESHOLD * query->tree->getQttyElements()) {
         query->tree->pullUpVisibility();
         query->tree->traverseNode(traversalStack, basicProgram);
       }
@@ -179,18 +181,18 @@ void Scene::occlusionCulling() {
     if (!traversalStack.empty()) {
       auto next_tree = traversalStack.top();
       traversalStack.pop();
-      if (cullingPolicy == OCCLUSION || viewCulling(next_tree->getAABBMesh())) {
+      if (viewCulling(next_tree->getAABBMesh())) {
         auto t = *next_tree;
-        Visibility visibility = next_tree->computeVisibility();
-        if (visibility.wasVisible) {
-          next_tree->traverseNode(traversalStack, basicProgram);
-        }
+        Visibility visibility = next_tree->computeVisibility(frame);
         if (!visibility.opened) {
           auto *newQuery = new Query(next_tree);
           glBeginQuery(GL_SAMPLES_PASSED, newQuery->queryID);
           newQuery->tree->renderModels(basicProgram);
           glEndQuery(GL_SAMPLES_PASSED);
           queryQueue.push(newQuery);
+        }
+        if (visibility.wasVisible) {
+          next_tree->traverseNode(traversalStack, basicProgram);
         }
       }
     }
@@ -199,6 +201,7 @@ void Scene::occlusionCulling() {
 }
 
 void Scene::render() {
+  ++frame;
   if (meshes.size() > 0) {
     bool view = cullingPolicy == ALL || cullingPolicy == VIEW;
     bool occluded = cullingPolicy == ALL || cullingPolicy == OCCLUSION;

@@ -38,7 +38,7 @@ public:
   void renderModels(ShaderProgram &basicProgram) const;
   void traverseNode(std::stack<KdTree *> &traversalStack,
                     ShaderProgram &basicProgram);
-  Visibility computeVisibility();
+  Visibility computeVisibility(int frame);
   void nextFrame();
 
 private:

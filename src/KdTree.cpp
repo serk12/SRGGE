@@ -2,10 +2,10 @@
 
 #include "Debug.h"
 
-const int KdTree::OCCLUDED_FRAMES = 8;
+const int KdTree::OCCLUDED_FRAMES = 14;
 
 namespace Axis {
-inline static const int DIM = 3;
+inline static const int DIM = 2;
 inline static const glm::vec3 Z = {0.0f, 0.0f, 1.0f};
 inline static const glm::vec3 X = {1.0f, 0.0f, 0.0f};
 inline static const glm::vec3 Y = {0.0f, 1.0f, 0.0f};
@@ -67,15 +67,18 @@ KdTree::KdTree(const std::list<Mesh *> &elements, KdTree *father, int level)
 
       if (negative.size() > 0 && positive.size() > 0) {
         correct = true;
+        std::list<Mesh *> aux(mid);
+        positive.merge(aux);
+        negative.merge(mid);
         KdTree *two = new KdTree(positive, this, level + 1);
         KdTree *one = new KdTree(negative, this, level + 1);
         mChildrens.push_back(one);
         mChildrens.push_back(two);
-        for (const auto &e : mid) {
-          mElements.push_back(e);
-          glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
-          mElementsAABB.buildCube(min, e->getSize());
-        }
+        // for (const auto &e : mid) {
+        //   mElements.push_back(e);
+        //   glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
+        //   mElementsAABB.buildCube(min, e->getSize());
+        // }
         break;
       }
     }
@@ -110,17 +113,21 @@ void KdTree::pullUpVisibility() {
 void KdTree::traverseNode(std::stack<KdTree *> &traversalStack,
                           ShaderProgram &basicProgram) {
   // because we have "middle" objects we render always
-  renderModels(basicProgram);
+  if (isLeaf()) {
+    renderModels(basicProgram);
+  }
   for (auto c : mChildrens) {
     traversalStack.push(c);
   }
 }
 
-Visibility KdTree::computeVisibility() {
+Visibility KdTree::computeVisibility(int frame) {
   Visibility result;
-  result.wasVisible = mVisible && (mLastFrameVisible == (OCCLUDED_FRAMES - 1));
+  result.wasVisible =
+      mVisible && (frame - mLastFrameVisible <= OCCLUDED_FRAMES);
   result.opened = result.wasVisible && !isLeaf();
   mVisible = false;
+  mLastFrameVisible = frame;
   for (auto &e : mElements) {
     e->setOcclusion(true);
   }
@@ -128,10 +135,8 @@ Visibility KdTree::computeVisibility() {
 }
 
 void KdTree::renderModels(ShaderProgram &basicProgram) const {
-  for (auto &e : mElements) {
-    basicProgram.setUniformMatrix4f("model", e->getModelMatrix());
-    e->renderBoundinBox();
-  }
+  basicProgram.setUniformMatrix4f("model", mElementsAABB.getModelMatrix());
+  mElementsAABB.render();
 }
 
 void KdTree::render(ShaderProgram &basicProgram, int level) const {
