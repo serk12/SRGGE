@@ -60,7 +60,21 @@ Octree::Octree(const std::vector<glm::vec3> &vertices) : Octree() {
   }
 }
 
-Octree Octree::cut(int level) const { return Octree(); }
+void Octree::cut(int l) {
+  if (level < l) {
+    for (auto &c : childrens) {
+      c.cut(l);
+    }
+  } else if (level == l) {
+    for (auto &c : childrens) {
+      auto result = c.getAllElements();
+      if (result.size() > 0) {
+        elements.insert(elements.end(), result.begin(), result.end());
+      }
+    }
+    childrens.clear();
+  }
+}
 
 bool Octree::checkError(const glm::vec3 &vertex) const {
   for (unsigned int i = 0; i < DIM_SIZE; ++i) {
@@ -143,8 +157,23 @@ void Octree::add(Vertex &vertex) {
   ++qtty;
 }
 
+std::vector<Vertex> Octree::getAllElements() const {
+  std::vector<Vertex> result;
+  if (childrens.size() == VECT_SIZE) {
+    for (auto &c : childrens) {
+      auto r = c.getAllElements();
+      result.insert(result.end(), r.begin(), r.end());
+    }
+  } else {
+    for (auto &v : elements) {
+      result.push_back(v);
+    }
+  }
+  return result;
+}
 glm::vec3 Octree::getElementVec(int i) const { return elements[i].vertex; }
 int Octree::getElementIndex(int i) const { return elements[i].index; }
 int Octree::getQttyElements() const { return elements.size(); }
+int Octree::getQttyChildrens() const { return childrens.size(); }
 int Octree::getQtty() const { return qtty; }
 const Octree &Octree::getChildren(int i) const { return childrens[i]; }

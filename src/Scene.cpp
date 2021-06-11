@@ -217,7 +217,7 @@ void Scene::render() {
     basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
     basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+    qttyTriangles = 0;
     for (auto &mesh : meshes) {
       basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
       if (!bPolygonFill) {

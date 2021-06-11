@@ -20,9 +20,17 @@ bool DebugDisplay::update(int dt) {
   return true;
 }
 
+void DebugDisplay::setQttyTriangles(int triangles) {
+  qttyTriangles = triangles;
+}
+
 bool DebugDisplay::render() {
-  int fps = 1.0f / (deltaTime / qtty) * 1000.0f;
-  std::string s = std::to_string(fps);
+  float avg_dt = deltaTime / qtty;
+  int fps = 1.0f / avg_dt * 1000.0f;
+  int tps = qttyTriangles / avg_dt;
+  int maxCost = tps / fps;
+  std::string s = std::to_string(fps) + " (fps) / " + std::to_string(tps) +
+                  " (tps) / " + std::to_string(maxCost) + " (MC) ";
   textRender.renderText(s, 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 1.0f, 0.2f));
   return true;
 }

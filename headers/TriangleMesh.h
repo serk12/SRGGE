@@ -24,6 +24,23 @@ struct uint3 {
   uint32_t x, y, z;
 };
 
+struct int3 {
+  int x, y, z;
+};
+
+struct Face {
+  glm::vec3 vertex0, vertex1, vertex2;
+  int index0, index1, index2;
+};
+
+inline bool operator<(const int3 &lhs, const int3 &rhs) {
+  if (lhs.x != rhs.x)
+    return lhs.x < rhs.x;
+  if (lhs.y != rhs.y)
+    return lhs.y < rhs.y;
+  return lhs.z < rhs.z;
+}
+
 class TriangleMesh {
 public:
   TriangleMesh();
@@ -31,6 +48,7 @@ public:
   void addVertex(const glm::vec3 &position);
   void addTriangle(int v0, int v1, int v2);
   void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
+  vector<Face> getFacesByVertex(int i) const;
 
   void sendToOpenGL(ShaderProgram &program);
   void render() const;
@@ -47,6 +65,7 @@ public:
   int getVerticesSize() const;
   int getTriangleSize() const;
   void offSetY(float y);
+  vector<int3> getTriangles() const;
 
 private:
   vector<glm::vec3> vertices;

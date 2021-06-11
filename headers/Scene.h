@@ -36,6 +36,7 @@ public:
   void keyEvent(int key, int specialkey, bool pressed);
   void mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                  bool *mouseButtons);
+  int getQttyTriangles() const;
 
 private:
   void loadMesh();
@@ -52,7 +53,7 @@ private:
   std::list<Mesh *> meshes;
   ShaderProgram basicProgram;
   Player player;
-  int bKDTree, frame;
+  int bKDTree, frame, qttyTriangles;
   bool bPolygonFill, bPolygonBB;
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};

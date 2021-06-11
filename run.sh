@@ -26,12 +26,12 @@ do
     key="$1"
     case $key in
         +(cosa|wall|ground|bunny|bunny|frog|horse|maxplanck|sphere|torus|dragon|happy|lucy|moai|tetrahedron))
-        INPUT_FILE="models/${key}.ply"
         DEFAULT_MODEL="models/${key}.ply"
+        INPUT_FILE="models/${key}.ply"
         ;;
         +(big_museum|small_museum|big_grid|small_grid))
-        INPUT_FILE="resources/${key}.txt"
         DEFAULT_TAILMAP="resources/${key}.txt"
+        INPUT_FILE="resources/${key}.txt"
         ;;
         --LOD|--calc-LOD)
         if [[ $INPUT_FILE == *".txt" ]]; then
@@ -49,6 +49,9 @@ do
         --RELEASE)
         CONFIG="Release"
         ;;
+        *.ply|*.txt)
+        OUTPUT_FILE=$key
+        ;;
     esac
     shift
 done
@@ -63,8 +66,20 @@ esac
 
 # build
 case $COMMAND in
+"install")
+    echo "requirements: git, cmake and Freetype"
+    echo "project-installing: TinyPly"
+    git submodule init
+    git submodule update
+    mkdir -p ./libs/tinyply/tmp/build
+    cd ./libs/tinyply/tmp/build
+    cmake ../../
+    make
+    echo "if tinyply gives errors try 'sudo make install'"
+    echo "example: https://github.com/markcox80/tinyply-cmake"
+    ;;
 "models")
-    ls -l --block-size=M ../models/*.ply
+    ls -l --block-size=M --sort=size ../models/*.ply
     ;;
 "init")
     mkdir -p build
@@ -84,7 +99,7 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    echo $INPUT_FILE
-    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL
+    echo $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
+    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
     ;;
 esac

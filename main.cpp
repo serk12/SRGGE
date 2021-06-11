@@ -6,9 +6,11 @@ enum ApplicationType { MUSEUM, LOD };
 static const char *CULLING_FLAG = "--CULLING";
 static const char *LOD_FLAG = "--calc-LOD";
 
-int main(int argc, char **argv) {
+ApplicationType parseParameters(int argc, char **argv) {
   ApplicationType application = ApplicationType::MUSEUM;
-  for (unsigned int i = 0; i < argc; ++i) {
+  for (unsigned int i = 1; i < argc; ++i) {
+  }
+  for (unsigned int i = 1; i < argc; ++i) {
     if (strcmp(argv[i], LOD_FLAG) == 0) {
       application = ApplicationType::LOD;
       if (argc >= i + 1) {
@@ -17,7 +19,6 @@ int main(int argc, char **argv) {
         Debug::error("ERROR LOD flag");
         break;
       }
-
     } else if (strcmp(argv[i], CULLING_FLAG) == 0) {
       if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '3') {
         Application::CULLING_POLICY = CullingMethod(std::stoi(argv[i + 1]));
@@ -27,7 +28,19 @@ int main(int argc, char **argv) {
       }
     }
   }
-  switch (application) {
+  std::string lastParameter = argv[argc - 1];
+  std::string file_format =
+      std::string(&lastParameter[lastParameter.size() - 3],
+                  &lastParameter[lastParameter.size()]);
+
+  if (file_format == "ply" || file_format == "txt") {
+    CalcLOD::OUTPUT_FILE = lastParameter;
+  }
+  return application;
+}
+
+int main(int argc, char **argv) {
+  switch (parseParameters(argc, argv)) {
   case ApplicationType::MUSEUM:
     new Museum(argc, argv);
     break;
