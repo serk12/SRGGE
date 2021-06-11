@@ -58,6 +58,7 @@ Mesh::Mesh(glm::vec3 pos) {
   mOccluded = false;
   mName = "";
   mPos = pos;
+  mQttyTriangles = mLastFrameVisible = 0;
   mModelMatrix = glm::mat4(1.0f);
   mModelMatrix = glm::translate(mModelMatrix, mPos);
   mGround = nullptr;
@@ -88,18 +89,25 @@ glm::vec3 Mesh::getSize() const { return mModel->getSize(); }
 glm::vec3 Mesh::getMin() const { return mModel->getMin(); }
 
 void Mesh::render() const {
+  mQttyTriangles = 0;
   if (mGround != nullptr) {
     mGround->render();
+    mQttyTriangles += mGround->getTriangleSize();
   }
   if (isVisible() || mName == TileMapLoader::WALL ||
       mName == TileMapLoader::GROUND) {
     mModel->render();
+    mQttyTriangles += mModel->getTriangleSize();
   }
 }
 
+int Mesh::getTriangleSize() const { return mQttyTriangles; }
+
 void Mesh::renderBoundinBox() const {
+  mQttyTriangles = 0;
   if (TileMapLoader::GROUND != mName) {
     mBoundinBox->render();
+    mQttyTriangles += mBoundinBox->getTriangleSize();
   }
 }
 

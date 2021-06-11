@@ -73,12 +73,7 @@ vector<int3> TriangleMesh::getTriangles() const {
   return result;
 }
 
-TriangleMesh::TriangleMesh(glm::vec3 pos) : pos(pos) {
-  model = glm::mat4(1.0f);
-  model = glm::translate(model, pos);
-}
-
-glm::mat4 &TriangleMesh::getModelMatrix() { return model; }
+TriangleMesh::TriangleMesh() { bbMax = bbMin = glm::vec3(0.0f); }
 
 void TriangleMesh::addVertex(const glm::vec3 &position) {
   if (vertices.size() == 0) {

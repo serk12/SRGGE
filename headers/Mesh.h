@@ -28,6 +28,7 @@ public:
   bool canAddToKdTree() const;
   void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
+  int getTriangleSize() const;
 
   void render() const;
   void renderBoundinBox() const;
@@ -47,7 +48,8 @@ private:
 
   glm::mat4 mModelMatrix;
   glm::vec3 mPos;
-  int mLastFrameVisible = 0;
+  int mLastFrameVisible;
+  mutable int mQttyTriangles;
   bool mInsideFrustum, mOccluded;
 };
 

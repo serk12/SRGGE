@@ -80,3 +80,15 @@ void Debug::print(const KdTree &kdtree) {
     Debug::print(k);
   }
 }
+
+void Debug::cumulative(int n) { qtty += n; }
+void Debug::printQtty() { print(qtty); }
+
+void Debug::print(const int i) { std::cerr << i << std::endl; }
+
+void Debug::print(const std::vector<Vertex> &vec) {
+  for (const auto &v : vec) {
+    std::cerr << v.index << " ";
+  }
+  std::cerr << std::endl;
+}

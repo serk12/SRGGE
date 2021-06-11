@@ -101,6 +101,8 @@ void Scene::loadTileMap() {
   kdTree = new KdTree(meshes);
 }
 
+int Scene::getQttyTriangles() const { return qttyTriangles; }
+
 void Scene::unloadMesh() {
   if (meshes.size() > 0) {
     Mesh *mesh = meshes.back();
@@ -235,6 +237,7 @@ void Scene::render() {
       } else {
         mesh->renderBoundinBox();
       }
+      qttyTriangles += mesh->getTriangleSize();
     }
 
     if (occluded) {
