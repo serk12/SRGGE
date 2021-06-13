@@ -1,5 +1,35 @@
 #include "Debug.h"
 
+#include "KdTree.h"
+#include "Octree.h"
+#include "TileMapLoader.h"
+#include "TriangleMesh.h"
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
+const std::string Debug::filePathDefault = "./log/log.log";
+std::string Debug::filePath = "./log/log.log";
+
+void Debug::log(const float fps, const int triangles) {
+  ofstream file;
+  if (!fileOpen) {
+    int i = 0;
+    while (std::filesystem::exists(filePath)) {
+      Debug::filePath = filePathDefault + std::string("_") + std::to_string(i);
+      ++i;
+    }
+    fileOpen = true;
+    file.open(filePath, std::ios_base::app);
+    file << "fps;triangles" << std::endl;
+  } else {
+    file.open(filePath, std::ios_base::app);
+  }
+  file << fps << ";" << triangles << std::endl;
+  file.close();
+}
+
 void Debug::error(const std::string &s) {
   std::cerr << "ERROR: " << s << std::endl;
 }

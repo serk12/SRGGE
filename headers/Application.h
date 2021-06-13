@@ -1,7 +1,6 @@
 #ifndef _APPLICATION_INCLUDE
 #define _APPLICATION_INCLUDE
 
-#include "Debug.h"
 #include "DebugDisplay.h"
 #include "Scene.h"
 

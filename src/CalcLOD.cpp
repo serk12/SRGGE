@@ -1,6 +1,7 @@
 #include "CalcLOD.h"
 
 #include "Debug.h"
+#include "Octree.h"
 #include "PLYReader.h"
 #include "TriangleMesh.h"
 

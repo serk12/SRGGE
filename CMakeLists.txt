@@ -17,6 +17,7 @@ execute_process(COMMAND ln -s ../resources)
 execute_process(COMMAND ln -s ../LOD/models/wall.ply ../../models)
 execute_process(COMMAND ln -s ../LOD/models/ground.ply ../../models)
 execute_process(COMMAND ln -s ../../models)
+execute_process(COMMAND mkdir log)
 
 set(appName BaseCode)
 

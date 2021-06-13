@@ -10,7 +10,14 @@
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
-enum CullingMethod { NONE = 0, VIEW = 1, OCCLUSION = 2, ALL = 3 };
+enum CullingMethod {
+  NONE = 0,
+  VIEW = 1,
+  OCCLUSION = 2,
+  ALL = 3,
+  OCCLUSION_SAW = 4,
+  ALL_SAW = 5
+};
 
 struct Query {
   KdTree *tree;

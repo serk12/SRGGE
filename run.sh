@@ -59,7 +59,7 @@ shopt -u extglob;
 
 # pre-build
 case $COMMAND in
-""|"run"|"build")
+""|"run"|"build"|"test_occlusion")
     cd ./build
     ;;
 esac
@@ -101,5 +101,12 @@ case $COMMAND in
 ""|"run"|"build")
     echo $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
     ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
+    ;;
+"test_occlusion")
+    rm log.log* *.log
+    for i in $(seq 0 5); do
+        ./BaseCode $INPUT_FILE --CULLING $i & sleep 30; kill $!
+        mv log.log log_${INPUT_FILE////_}_${i}.log
+    done
     ;;
 esac

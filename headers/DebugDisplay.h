@@ -14,7 +14,7 @@ public:
   void setQttyTriangles(int triangles);
 
 private:
-  int deltaTime, qttyTriangles, qtty;
+  int accDeltaTime, deltaTime, qttyTriangles, qtty;
   TextRender textRender;
 };
 

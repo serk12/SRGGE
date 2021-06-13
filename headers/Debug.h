@@ -1,15 +1,19 @@
 #ifndef _DEBUG_INCLUDE
 #define _DEBUG_INCLUDE
 
-#include "KdTree.h"
-#include "Octree.h"
+#include <glm/glm.hpp>
+
 #include "TileMapLoader.h"
-#include "TriangleMesh.h"
-#include <iostream>
+
+struct Vertex;
+class Octree;
+class KdTree;
+class TriangleMesh;
 
 struct Debug {
   static void error(const std::string &s);
   static void info(const std::string &s);
+  static void log(const float fps, const int triangles);
   static void print(const TileRowModels &t);
   static void print(const TileMapModels &t);
   static void print(const glm::vec3 &v);
@@ -26,6 +30,9 @@ struct Debug {
 
 private:
   inline static int qtty = 0;
+  inline static bool fileOpen = false;
+  static std::string filePath;
+  static const std::string filePathDefault;
 };
 
 #endif // ifndef _DEBUG_INCLUDE

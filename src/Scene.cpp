@@ -183,6 +183,9 @@ void Scene::occlusionCulling() {
     if (!traversalStack.empty()) {
       auto next_tree = traversalStack.top();
       traversalStack.pop();
+      if (next_tree->getQttyElements() == 0) {
+        next_tree->traverseNode(traversalStack, basicProgram);
+      }
       if (viewCulling(next_tree->getAABBMesh())) {
         auto t = *next_tree;
         Visibility visibility = next_tree->computeVisibility(frame);
@@ -205,8 +208,12 @@ void Scene::occlusionCulling() {
 void Scene::render() {
   ++frame;
   if (meshes.size() > 0) {
-    bool view = cullingPolicy == ALL || cullingPolicy == VIEW;
-    bool occluded = cullingPolicy == ALL || cullingPolicy == OCCLUSION;
+    bool view = cullingPolicy == ALL || cullingPolicy == VIEW ||
+                cullingPolicy == ALL_SAW;
+    bool occluded_kd = cullingPolicy == ALL || cullingPolicy == OCCLUSION;
+    bool occluded_saw =
+        cullingPolicy == ALL_SAW || cullingPolicy == OCCLUSION_SAW;
+    bool occluded = occluded_kd || occluded_saw;
     for (auto &mesh : meshes) {
       if (view) {
         mesh->setInsideFrustum(viewCulling(*mesh));
@@ -244,8 +251,12 @@ void Scene::render() {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       glDepthMask(GL_FALSE);
-      occlusionCullingSaW();
-      // occlusionCulling();
+      if (occluded_saw) {
+        occlusionCullingSaW();
+      }
+      if (occluded_kd) {
+        occlusionCulling();
+      }
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glDepthMask(GL_TRUE);
     }

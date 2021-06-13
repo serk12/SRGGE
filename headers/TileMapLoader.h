@@ -4,8 +4,8 @@
 #include <map>
 #include <vector>
 
-typedef std::vector<std::string> TileRowModels;
-typedef std::vector<TileRowModels> TileMapModels;
+using TileRowModels = std::vector<std::string>;
+using TileMapModels = std::vector<TileRowModels>;
 
 class TileMapLoader {
 public:

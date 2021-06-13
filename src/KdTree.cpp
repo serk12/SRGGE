@@ -16,9 +16,9 @@ static const glm::vec3 next(int i) {
   case 0:
     return X;
   case 1:
-    return Y;
-  case 2:
     return Z;
+  case 2:
+    return Y;
   }
 }
 }; // namespace Axis
@@ -95,7 +95,9 @@ KdTree::KdTree(const std::list<Mesh *> &elements, KdTree *father, int level)
     glm::vec3 min = e->getModelMatrix() * glm::vec4(e->getMin(), 1.0f);
     mElementsAABB.buildCube(min, e->getSize());
   }
-  mGlobalAABB = Mesh(mElementsAABB.getMin());
+  glm::vec3 pos =
+      mElementsAABB.getModelMatrix() * glm::vec4(mElementsAABB.getMin(), 1.0f);
+  mGlobalAABB = Mesh(pos);
   mGlobalAABB.buildCube({0, 0, 0}, mElementsAABB.getSize());
 }
 
@@ -112,7 +114,6 @@ void KdTree::pullUpVisibility() {
 }
 void KdTree::traverseNode(std::stack<KdTree *> &traversalStack,
                           ShaderProgram &basicProgram) {
-  // because we have "middle" objects we render always
   if (isLeaf()) {
     renderModels(basicProgram);
   }

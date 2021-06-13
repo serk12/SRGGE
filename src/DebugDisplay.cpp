@@ -1,3 +1,4 @@
+#include "Debug.h"
 #include "DebugDisplay.h"
 
 DebugDisplay::DebugDisplay() {}
@@ -9,11 +10,12 @@ void DebugDisplay::init() {
 }
 
 bool DebugDisplay::update(int dt) {
+  deltaTime = dt;
   if (qtty > 10) {
-    deltaTime = dt;
+    accDeltaTime = dt;
     qtty = 1;
   } else {
-    deltaTime += dt;
+    accDeltaTime += dt;
     ++qtty;
   }
 
@@ -25,7 +27,8 @@ void DebugDisplay::setQttyTriangles(int triangles) {
 }
 
 bool DebugDisplay::render() {
-  float avg_dt = deltaTime / qtty;
+  Debug::log(1.0f / deltaTime * 1000.0f, qttyTriangles);
+  float avg_dt = accDeltaTime / qtty;
   int fps = 1.0f / avg_dt * 1000.0f;
   int tps = qttyTriangles / avg_dt;
   int maxCost = tps / fps;

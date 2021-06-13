@@ -49,6 +49,7 @@ void Museum::mouseCallback(int button, int state, int x, int y) {
     buttonId = 1;
     break;
 
+  default:
   case GLUT_MIDDLE_BUTTON:
     buttonId = 2;
     break;
@@ -88,8 +89,8 @@ Museum::Museum(int argc, char **argv) {
   // GLUT initialization
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowPosition(100, 100);
-  glutInitWindowSize(640, 480);
+  glutInitWindowPosition(0, 0);
+  glutInitWindowSize(1920, 1080);
 
   glutCreateWindow(argv[0]);
   glutReshapeFunc(resizeCallback);

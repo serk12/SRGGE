@@ -1,6 +1,8 @@
-#include "CalcLOD.h"
-#include "Museum.h"
 #include <cstring>
+
+#include "CalcLOD.h"
+#include "Debug.h"
+#include "Museum.h"
 
 enum ApplicationType { MUSEUM, LOD };
 static const char *CULLING_FLAG = "--CULLING";
@@ -20,7 +22,7 @@ ApplicationType parseParameters(int argc, char **argv) {
         break;
       }
     } else if (strcmp(argv[i], CULLING_FLAG) == 0) {
-      if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '3') {
+      if (argc >= i + 1 && argv[i + 1][0] >= '0' && argv[i + 1][0] <= '5') {
         Application::CULLING_POLICY = CullingMethod(std::stoi(argv[i + 1]));
       } else {
         Debug::error("ERROR culling flag");
