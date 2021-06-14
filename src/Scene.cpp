@@ -13,6 +13,9 @@
 #include "TileMapLoader.h"
 
 const int Scene::VISIBLE_PIXELS_THRESHOLD = 200;
+const int Scene::HISTERESY_ELAPSE_TIME = 250; // 0.25s = 250
+const float Scene::HISTERESY_MODELS_COUNT = 0.10;
+const int Scene::QTTY_MEAN = 100;
 
 struct Benefit {
   float benefit;
@@ -80,7 +83,10 @@ void Scene::init(const std::string &fn, CullingMethod cm) {
   bPolygonBB = false;
   filename = fn;
   bKDTree = -1;
-  frame = 0;
+  qttyMean = frame = histeresyCount = 0;
+  qttyMean = 1;
+  qttyTriangles = 0;
+  qttyTrianglesTopFPS = -1;
   basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");
   Mesh::setShaderProgram(&basicProgram);
   player.init();
@@ -124,7 +130,7 @@ void Scene::loadTileMap() {
   kdTree = new KdTree(meshes);
 }
 
-int Scene::getQttyTriangles() const { return qttyTriangles; }
+int Scene::getQttyTriangles() const { return qttyTriangles / qttyMean; }
 
 void Scene::unloadMesh() {
   if (meshes.size() > 0) {
@@ -138,34 +144,54 @@ void Scene::unloadMesh() {
 }
 
 void Scene::updateLODs(int deltaTime) {
-  float maxCost = ((qttyTriangles / deltaTime * 1000.0f) * FPS) * 1.005f;
-  bool decrease = qttyTriangles > maxCost;
-  BenefitQueue benefitQueue;
-  for (auto &m : meshes) {
-    if (m->isVisible()) {
-      Benefit benefit((decrease ? -1.0f : 1.0f) *
-                          m->getMaxBenefit(player.getPos()),
-                      m->getTriangleSize(), m);
-      benefitQueue.push(benefit);
+  int meanQttyTriangles = qttyTriangles / qttyMean;
+  histeresyCount += deltaTime;
+  if (histeresyCount >= HISTERESY_ELAPSE_TIME) {
+    histeresyCount -= HISTERESY_ELAPSE_TIME;
+    int maxCostTriangles = meanQttyTriangles;
+    // rememver the max qttyTriangles with ~ FPS fps
+    if (1.0f / deltaTime * 1000.0f >= 0.9f * (1.0f / FPS) &&
+        meanQttyTriangles > qttyTrianglesTopFPS) {
+      qttyTrianglesTopFPS = meanQttyTriangles;
+    } else if (qttyTrianglesTopFPS != -1) {
+      maxCostTriangles = qttyTrianglesTopFPS;
     }
-  }
-  float totalCost = qttyTriangles;
-
-  while (!benefitQueue.empty()) {
-    auto benefit = benefitQueue.top();
-    benefitQueue.pop();
-    if (decrease) {
-      benefit.mesh->decreaseLOD();
-      totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
-      if (totalCost <= maxCost) {
+    float maxCost = ((maxCostTriangles / deltaTime * 1000.0f) * FPS);
+    bool decrease = meanQttyTriangles > maxCost;
+    BenefitQueue benefitQueue;
+    for (auto &m : meshes) {
+      if (m->isVisible()) {
+        Benefit benefit(m->getMaxBenefit(player.getPos(), decrease),
+                        m->getTriangleSize(), m);
+        benefitQueue.push(benefit);
+      } else {
+        m->increaseLOD();
+      }
+    }
+    float totalCost = meanQttyTriangles;
+    int qttyChanges = 0;
+    while (!benefitQueue.empty()) {
+      auto benefit = benefitQueue.top();
+      benefitQueue.pop();
+      if (decrease) {
+        if (totalCost <= maxCost) {
+          break;
+        } else {
+          benefit.mesh->decreaseLOD();
+          totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
+        }
+      } else {
+        if (totalCost > maxCost) {
+          break;
+        } else {
+          totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
+          benefit.mesh->increaseLOD();
+        }
+      }
+      ++qttyChanges;
+      if (qttyChanges >= meshes.size() * HISTERESY_MODELS_COUNT) {
         break;
       }
-    } else {
-      totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
-      if (totalCost > maxCost) {
-        break;
-      }
-      benefit.mesh->increaseLOD();
     }
   }
 }
@@ -285,7 +311,12 @@ void Scene::render() {
     basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
     basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    qttyTriangles = 0;
+    if (qttyMean == QTTY_MEAN) {
+      qttyMean = 1;
+      qttyTriangles = 0;
+    } else {
+      ++qttyMean;
+    }
     for (auto &mesh : meshes) {
       basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
       if (!bPolygonFill) {

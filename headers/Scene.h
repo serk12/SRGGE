@@ -61,12 +61,14 @@ private:
   std::list<Mesh *> meshes;
   ShaderProgram basicProgram;
   Player player;
-  int bKDTree, frame, qttyTriangles;
+  int bKDTree, frame, qttyTriangles, qttyTrianglesTopFPS, histeresyCount,
+      qttyMean;
   bool bPolygonFill, bPolygonBB;
   std::string filename; // path to last model loaded
   glm::vec3 next_pos = {0, -1, 0};
   CullingMethod cullingPolicy;
-  static const int VISIBLE_PIXELS_THRESHOLD;
+  static const int VISIBLE_PIXELS_THRESHOLD, HISTERESY_ELAPSE_TIME, QTTY_MEAN;
+  static const float HISTERESY_MODELS_COUNT;
 };
 
 #endif // _SCENE_INCLUDE

@@ -82,7 +82,7 @@ Mesh::Mesh(glm::vec3 pos) {
   mOccluded = false;
   mName = "";
   mPos = pos;
-  mMaxLOD = mLOD = mQttyTriangles = mLastFrameVisible = 0;
+  mLOD = mQttyTriangles = mLastFrameVisible = 0;
   mModelMatrix = glm::mat4(1.0f);
   mModelMatrix = glm::translate(mModelMatrix, mPos);
   mGround = nullptr;
@@ -96,7 +96,6 @@ Mesh::Mesh(const std::string &name, glm::vec3 pos) : Mesh(pos) {
     mGround = getMesh(TileMapLoader::GROUND);
   }
   mModel = getMesh(name);
-  mMaxLOD = msNameToMaxLOD[mName];
   mBoundinBox = new TriangleMesh();
   mBoundinBox->buildCube(mModel->getMin(), mModel->getSize());
   mBoundinBox->sendToOpenGL(*msBasicProgram);
@@ -128,22 +127,34 @@ void Mesh::render() const {
 
 int Mesh::getTriangleSize() const { return mQttyTriangles; }
 
-float Mesh::getMaxBenefit(const glm::vec3 &player) const {
-  int nextLOD = mLOD - 1;
-  if (nextLOD <= 0)
-    nextLOD = 0;
+float Mesh::getMaxBenefit(const glm::vec3 &player, bool decrease) const {
+
+  int nextLOD = mLOD;
+  if (decrease) {
+    ++nextLOD;
+    if (nextLOD > msNameToMaxLOD[mName] - 2)
+      nextLOD = msNameToMaxLOD[mName] - 2;
+  } else {
+    --nextLOD;
+    if (nextLOD <= 0)
+      nextLOD = 0;
+  }
+  int cluster = msNameToMaxLOD[mName] - nextLOD - 1;
   return 1.0f - ((mModel->getRadius() * 2.0f) /
-                 (pow(2, mLOD - 1) * glm::distance(player, mPos)));
+                 (pow(2, cluster) * glm::distance(player, mPos)));
 }
 
 std::string computeName(std::string name, int mLOD) {
   name.resize(name.size() - 4);
-  name += "_" + std::to_string(mLOD) + ".ply";
+  if (mLOD != 0) {
+    name += "_" + std::to_string(mLOD);
+  }
+  name += ".ply";
   return name;
 }
 
 void Mesh::decreaseLOD() {
-  if (mLOD >= (mMaxLOD - 2)) {
+  if (mLOD >= (msNameToMaxLOD[mName] - 2)) {
     return;
   } else {
     ++mLOD;

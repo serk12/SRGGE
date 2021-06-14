@@ -32,7 +32,7 @@ public:
   void buildCube(glm::vec3 pos = {0, 0, 0}, glm::vec3 size = {1, 1, 1});
   Collision planeTest(const glm::vec4 &plane, bool sphere = true) const;
   int getTriangleSize() const;
-  float getMaxBenefit(const glm::vec3 &player) const;
+  float getMaxBenefit(const glm::vec3 &player, bool decrease) const;
   void decreaseLOD();
   void increaseLOD();
 
@@ -55,7 +55,7 @@ private:
 
   glm::mat4 mModelMatrix;
   glm::vec3 mPos;
-  int mLastFrameVisible, mLOD, mMaxLOD;
+  int mLastFrameVisible, mLOD;
   mutable int mQttyTriangles;
   bool mInsideFrustum, mOccluded;
 };

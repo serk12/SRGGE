@@ -31,7 +31,7 @@ do
         INPUT_FILE="models/${key}.ply"
         MODEL_NAME=${key}
         ;;
-        +(big_museum|small_museum|big_grid|small_grid))
+        +(big_line|big_museum|small_museum|min_museum|big_grid|small_grid))
         DEFAULT_TAILMAP="resources/${key}.txt"
         INPUT_FILE="resources/${key}.txt"
         MODEL_NAME=${key}
