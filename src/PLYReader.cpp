@@ -1,10 +1,13 @@
-#include "Debug.h"
-#include "PLYReader.h"
 #include <cstring>
 #include <iostream>
 #include <vector>
 
+#include "Debug.h"
+#include "PLYReader.h"
+#include "TriangleMesh.h"
+
 bool PLYReader::readMesh(const string &filename, TriangleMesh &mesh) {
+  Debug::info(std::string("loading file: ") + filename);
   ifstream fin;
   int nVertices, nFaces;
 

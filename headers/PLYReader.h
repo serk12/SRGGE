@@ -1,9 +1,9 @@
 #ifndef PLYREADER_H
 #define PLYREADER_H
 
-#include "TriangleMesh.h"
 #include <fstream>
 
+class TriangleMesh;
 using namespace std;
 
 class PLYReader {

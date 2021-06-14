@@ -1,9 +1,12 @@
 #ifndef _DEBUG_INCLUDE
 #define _DEBUG_INCLUDE
 
-#include <glm/glm.hpp>
-
 #include "TileMapLoader.h"
+
+#include <assert.h>
+#include <glm/glm.hpp>
+#include <string>
+#include <vector>
 
 struct Vertex;
 class Octree;

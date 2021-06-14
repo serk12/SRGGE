@@ -1,5 +1,8 @@
 #include "Debug.h"
+
+#include "ShaderProgram.h"
 #include "TriangleMesh.h"
+
 #include <vector>
 
 using namespace std;

@@ -7,10 +7,33 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "TileMapLoader.h"
 #include <GL/glut.h>
 
+#include "Define.h"
+#include "TileMapLoader.h"
+
 const int Scene::VISIBLE_PIXELS_THRESHOLD = 200;
+
+struct Benefit {
+  float benefit;
+  int triangles;
+  Mesh *mesh;
+
+  Benefit(float b, int t, Mesh *m) {
+    benefit = b;
+    triangles = t;
+    mesh = m;
+  }
+};
+
+struct Compare {
+  bool operator()(Benefit a, Benefit b) {
+    return a.benefit < b.benefit || a.triangles < b.triangles;
+  }
+};
+
+using BenefitQueue =
+    std::priority_queue<Benefit, std::vector<Benefit>, Compare>;
 
 Query::Query(KdTree *t) {
   GLuint queries[1];
@@ -114,7 +137,43 @@ void Scene::unloadMesh() {
   }
 }
 
-void Scene::update(int deltaTime) { player.update(deltaTime); }
+void Scene::updateLODs(int deltaTime) {
+  float maxCost = ((qttyTriangles / deltaTime * 1000.0f) * FPS) * 1.005f;
+  bool decrease = qttyTriangles > maxCost;
+  BenefitQueue benefitQueue;
+  for (auto &m : meshes) {
+    if (m->isVisible()) {
+      Benefit benefit((decrease ? -1.0f : 1.0f) *
+                          m->getMaxBenefit(player.getPos()),
+                      m->getTriangleSize(), m);
+      benefitQueue.push(benefit);
+    }
+  }
+  float totalCost = qttyTriangles;
+
+  while (!benefitQueue.empty()) {
+    auto benefit = benefitQueue.top();
+    benefitQueue.pop();
+    if (decrease) {
+      benefit.mesh->decreaseLOD();
+      totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
+      if (totalCost <= maxCost) {
+        break;
+      }
+    } else {
+      totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
+      if (totalCost > maxCost) {
+        break;
+      }
+      benefit.mesh->increaseLOD();
+    }
+  }
+}
+
+void Scene::update(int deltaTime) {
+  player.update(deltaTime);
+  updateLODs(deltaTime);
+}
 
 bool Scene::viewCulling(const Mesh &mesh) {
   auto frustum = player.getFrustum();
@@ -213,7 +272,7 @@ void Scene::render() {
     bool occluded_kd = cullingPolicy == ALL || cullingPolicy == OCCLUSION;
     bool occluded_saw =
         cullingPolicy == ALL_SAW || cullingPolicy == OCCLUSION_SAW;
-    bool occluded = occluded_kd || occluded_saw;
+    bool occluded = (occluded_kd || occluded_saw) && kdTree != nullptr;
     for (auto &mesh : meshes) {
       if (view) {
         mesh->setInsideFrustum(viewCulling(*mesh));

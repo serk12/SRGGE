@@ -192,6 +192,7 @@ CalcLOD::CalcLOD(int argc, char **argv) {
     simplify(octree, *mesh, *new_mesh, level);
   } else {
     Debug::error("Error LOD > octree max level");
+    exit(1);
   }
   modelToPly(OUTPUT_FILE, *new_mesh);
 }

@@ -71,3 +71,5 @@ void Camera::computeViewMatrix() {
 glm::mat4 &Camera::getProjectionMatrix() { return projection; }
 
 glm::mat4 &Camera::getViewMatrix() { return view; }
+
+glm::vec3 Camera::getPos() const { return pos; }

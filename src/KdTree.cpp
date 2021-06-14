@@ -1,6 +1,7 @@
 #include "KdTree.h"
 
 #include "Debug.h"
+#include "ShaderProgram.h"
 
 const int KdTree::OCCLUDED_FRAMES = 14;
 

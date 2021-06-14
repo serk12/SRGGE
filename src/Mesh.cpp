@@ -1,11 +1,18 @@
 #include "Mesh.h"
 
+#include <assert.h>
+#include <filesystem>
+#include <iostream>
+
 #include "Debug.h"
 #include "PLYReader.h"
+#include "ShaderProgram.h"
+#include "TileMapLoader.h"
+#include "TriangleMesh.h"
 
 const int Mesh::OCCLUDED_FRAMES = 4;
 
-void Mesh::loadMesh(const std::string &fn) {
+void Mesh::loadMesh(const std::string &fn, bool isLOD) {
   TriangleMesh *mesh = new TriangleMesh();
   PLYReader reader;
   bool bSuccess = reader.readMesh(fn, *mesh);
@@ -15,6 +22,23 @@ void Mesh::loadMesh(const std::string &fn) {
     }
     mesh->sendToOpenGL(*msBasicProgram);
     msNameToModel[fn] = mesh;
+    int i = 1;
+    auto name = fn;
+    name.resize(name.size() - 4);
+    name += "_";
+    auto path = fn;
+    while (path[path.size() - 1] != '/') {
+      path.pop_back();
+    }
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+      if (std::string(entry.path()).find(name) != std::string::npos) {
+        loadMesh(std::string(entry.path()), true);
+        ++i;
+      }
+    }
+    if (!isLOD) {
+      msNameToMaxLOD[fn] = i;
+    }
   }
 }
 
@@ -58,7 +82,7 @@ Mesh::Mesh(glm::vec3 pos) {
   mOccluded = false;
   mName = "";
   mPos = pos;
-  mQttyTriangles = mLastFrameVisible = 0;
+  mMaxLOD = mLOD = mQttyTriangles = mLastFrameVisible = 0;
   mModelMatrix = glm::mat4(1.0f);
   mModelMatrix = glm::translate(mModelMatrix, mPos);
   mGround = nullptr;
@@ -72,6 +96,7 @@ Mesh::Mesh(const std::string &name, glm::vec3 pos) : Mesh(pos) {
     mGround = getMesh(TileMapLoader::GROUND);
   }
   mModel = getMesh(name);
+  mMaxLOD = msNameToMaxLOD[mName];
   mBoundinBox = new TriangleMesh();
   mBoundinBox->buildCube(mModel->getMin(), mModel->getSize());
   mBoundinBox->sendToOpenGL(*msBasicProgram);
@@ -83,7 +108,7 @@ void Mesh::buildCube(glm::vec3 pos, glm::vec3 size) {
 }
 
 const glm::mat4 &Mesh::getModelMatrix() const { return mModelMatrix; }
-const std::string &Mesh::getName() const { return mName; }
+const std::string Mesh::getName() const { return mName; }
 glm::vec3 Mesh::getPos() const { return mPos; }
 glm::vec3 Mesh::getSize() const { return mModel->getSize(); }
 glm::vec3 Mesh::getMin() const { return mModel->getMin(); }
@@ -102,6 +127,37 @@ void Mesh::render() const {
 }
 
 int Mesh::getTriangleSize() const { return mQttyTriangles; }
+
+float Mesh::getMaxBenefit(const glm::vec3 &player) const {
+  int nextLOD = mLOD - 1;
+  if (nextLOD <= 0)
+    nextLOD = 0;
+  return 1.0f - ((mModel->getRadius() * 2.0f) /
+                 (pow(2, mLOD - 1) * glm::distance(player, mPos)));
+}
+
+std::string computeName(std::string name, int mLOD) {
+  name.resize(name.size() - 4);
+  name += "_" + std::to_string(mLOD) + ".ply";
+  return name;
+}
+
+void Mesh::decreaseLOD() {
+  if (mLOD >= (mMaxLOD - 2)) {
+    return;
+  } else {
+    ++mLOD;
+  }
+  mModel = msNameToModel[computeName(mName, mLOD)];
+}
+void Mesh::increaseLOD() {
+  if (mLOD <= 0) {
+    return;
+  } else {
+    --mLOD;
+  }
+  mModel = msNameToModel[computeName(mName, mLOD)];
+}
 
 void Mesh::renderBoundinBox() const {
   mQttyTriangles = 0;

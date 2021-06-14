@@ -44,6 +44,7 @@ public:
   void mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                  bool *mouseButtons);
   int getQttyTriangles() const;
+  void updateLODs(int deltaTime);
 
 private:
   void loadMesh();

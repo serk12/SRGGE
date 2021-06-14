@@ -2,7 +2,6 @@
 
 #include "KdTree.h"
 #include "Octree.h"
-#include "TileMapLoader.h"
 #include "TriangleMesh.h"
 
 #include <filesystem>

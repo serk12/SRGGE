@@ -1,12 +1,13 @@
 #ifndef _TRIANGLE_MESH_INCLUDE
 #define _TRIANGLE_MESH_INCLUDE
 
-#include "ShaderProgram.h"
+#include <GL/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include <vector>
 
+class ShaderProgram;
 using namespace std;
 
 // Class TriangleMesh renders a very simple room with textures

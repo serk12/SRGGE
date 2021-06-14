@@ -1,9 +1,9 @@
 #include "Museum.h"
 
-#define TIME_PER_FRAME 1000.f / 60.f // Approx. 60 fps
-
 #include <GL/glew.h>
 #include <GL/glut.h>
+
+#include "Define.h"
 
 // If a key is pressed this callback is called
 

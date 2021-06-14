@@ -4,6 +4,8 @@
 #include "DebugDisplay.h"
 #include "Scene.h"
 
+#include <string>
+
 // Application is a singleton (a class with a single instance) that represents
 // our whole app
 

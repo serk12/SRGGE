@@ -1,5 +1,8 @@
-#include "Debug.h"
 #include "ShaderProgram.h"
+
+#include "Debug.h"
+#include "Shader.h"
+
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 

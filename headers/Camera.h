@@ -15,6 +15,7 @@ public:
   glm::mat4 &getProjectionMatrix();
   glm::mat4 &getViewMatrix();
   std::vector<glm::vec4> getFrustum();
+  glm::vec3 getPos() const;
 
 protected:
   void init(float initAngleX = 0.0f, float initAngleY = 0.0f);
