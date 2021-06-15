@@ -9,7 +9,12 @@
 #include <Eigen/Geometry>
 #include <map>
 #include <set>
+
+#if __has_include(<tinyply.h>)
 #include <tinyply.h>
+using namespace tinyply;
+#endif
+
 #include <vector>
 
 // https://gist.github.com/Aatch/8466307
@@ -18,8 +23,7 @@
 
 bool CalcLOD::USE_QEM = true;
 
-using namespace tinyply;
-
+#if __has_include(<tinyply.h>)
 void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
   std::filebuf fb;
   fb.open(filename, std::ios::out | std::ios::binary);
@@ -41,6 +45,11 @@ void modelToPly(const std::string &filename, const TriangleMesh &mesh) {
 
   mf.write(outstream_binary, true);
 }
+#else
+void modelToPly(const std::string &, const TriangleMesh &) {
+  Debug::error("ERROR NO TINYPLY INSTALL");
+}
+#endif
 
 void cubize(const Octree &octree, TriangleMesh &mesh, int level,
             int maxLevel = -1, bool showCubes = false) {

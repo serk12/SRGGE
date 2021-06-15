@@ -4,7 +4,17 @@
 #include "Octree.h"
 #include "TriangleMesh.h"
 
+#define ERRORFILESYSTEM false
+#if __has_include(<filesystem>)
 #include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#define ERRORFILESYSTEM true
+#endif
+
 #include <fstream>
 #include <iostream>
 
@@ -15,9 +25,14 @@ void Debug::log(const float fps, const int triangles) {
   ofstream file;
   if (!fileOpen) {
     int i = 0;
-    while (std::filesystem::exists(filePath)) {
-      Debug::filePath = filePathDefault + std::string("_") + std::to_string(i);
-      ++i;
+    if (ERRORFILESYSTEM) {
+      Debug::filePath = filePathDefault;
+    } else {
+      while (fs::exists(filePath)) {
+        Debug::filePath =
+            filePathDefault + std::string("_") + std::to_string(i);
+        ++i;
+      }
     }
     fileOpen = true;
     file.open(filePath, std::ios_base::app);
