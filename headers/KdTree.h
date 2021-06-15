@@ -2,6 +2,7 @@
 #define _KDTREE_INCLUDE
 
 #include "Mesh.h"
+
 #include <glm/glm.hpp>
 #include <list>
 #include <stack>
@@ -38,7 +39,7 @@ public:
   void renderModels(ShaderProgram &basicProgram) const;
   void traverseNode(std::stack<KdTree *> &traversalStack,
                     ShaderProgram &basicProgram);
-  Visibility computeVisibility(int frame);
+  Visibility computeVisibility(unsigned int frame);
   void nextFrame();
 
 private:
@@ -51,7 +52,7 @@ private:
   Mesh mGlobalAABB;
   Mesh mElementsAABB;
   KdTree *mFather;
-  int mLastFrameVisible;
+  unsigned int mLastFrameVisible;
   bool mVisible;
   static const int OCCLUDED_FRAMES;
 };

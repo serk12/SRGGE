@@ -1,36 +1,16 @@
 #ifndef _SCENE_INCLUDE
 #define _SCENE_INCLUDE
 
-#include "KdTree.h"
-#include "Mesh.h"
-#include "Player.h"
-#include "ShaderProgram.h"
+#include "ManagerLOD.h"
+#include "Occlusion.h"
+
 #include <glm/glm.hpp>
 #include <list>
 
 // Scene contains all the entities of our game.
 // It is responsible for updating and render them.
-enum CullingMethod {
-  NONE = 0,
-  VIEW = 1,
-  OCCLUSION = 2,
-  ALL = 3,
-  OCCLUSION_SAW = 4,
-  ALL_SAW = 5
-};
 
-struct Query {
-  KdTree *tree;
-  int qttyVisiblePixels;
-  GLuint queryID;
-  bool done;
-
-  Query(KdTree *tree);
-  bool getQuery();
-  void waitQuery();
-};
-
-class Scene {
+class Scene : public Occlusion, public ManagerLOD {
 public:
   Scene();
   ~Scene();
@@ -43,32 +23,10 @@ public:
   void keyEvent(int key, int specialkey, bool pressed);
   void mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                  bool *mouseButtons);
-  int getQttyTriangles() const;
-  void updateLODs(int deltaTime);
 
 private:
-  void loadMesh();
-  void loadMesh(const std::string &fn, glm::vec3 pos = {0, -1, 0});
-  void unloadMesh();
-  void initShaders();
-  void loadTileMap();
-  bool viewCulling(const Mesh &mesh);
-  void occlusionCulling();
-  void occlusionCullingSaW();
-
-private:
-  KdTree *kdTree;
-  std::list<Mesh *> meshes;
-  ShaderProgram basicProgram;
-  Player player;
-  int bKDTree, frame, qttyTriangles, qttyTrianglesTopFPS, histeresyCount,
-      qttyMean;
   bool bPolygonFill, bPolygonBB;
   std::string filename; // path to last model loaded
-  glm::vec3 next_pos = {0, -1, 0};
-  CullingMethod cullingPolicy;
-  static const int VISIBLE_PIXELS_THRESHOLD, HISTERESY_ELAPSE_TIME, QTTY_MEAN;
-  static const float HISTERESY_MODELS_COUNT;
 };
 
 #endif // _SCENE_INCLUDE

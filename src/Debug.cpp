@@ -114,6 +114,7 @@ void Debug::cumulative(int n) { qtty += n; }
 void Debug::printQtty() { print(qtty); }
 
 void Debug::print(const int i) { std::cerr << i << std::endl; }
+void Debug::print(const size_t i) { std::cerr << i << std::endl; }
 
 void Debug::print(const std::vector<Vertex> &vec) {
   for (const auto &v : vec) {

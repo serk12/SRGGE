@@ -1,4 +1,7 @@
 #include "Shader.h"
+
+#include "Debug.h"
+
 #include <fstream>
 
 using namespace std;
@@ -12,14 +15,14 @@ void Shader::initFromSource(const ShaderType type, const string &source) {
   const char *sourcePtr = source.c_str();
   GLint status;
   char buffer[512];
-
   switch (type) {
   case VERTEX_SHADER:
     shaderId = glCreateShader(GL_VERTEX_SHADER);
     break;
-
   case FRAGMENT_SHADER:
     shaderId = glCreateShader(GL_FRAGMENT_SHADER);
+    break;
+  default:
     break;
   }
   if (shaderId == 0)

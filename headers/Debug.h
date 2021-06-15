@@ -29,6 +29,7 @@ struct Debug {
   static void cumulative(int n);
   static void printQtty();
   static void print(const int i);
+  static void print(const size_t i);
   static void print(const std::vector<Vertex> &vec);
 
 private:

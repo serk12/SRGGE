@@ -12,10 +12,12 @@ public:
   Camera();
   ~Camera();
 
-  glm::mat4 &getProjectionMatrix();
-  glm::mat4 &getViewMatrix();
-  std::vector<glm::vec4> getFrustum();
+  const glm::mat4 &getProjectionMatrix() const;
+  const glm::mat4 &getViewMatrix() const;
+  std::vector<glm::vec4> getFrustum() const;
   glm::vec3 getPos() const;
+  void setPos(glm::vec3 pos);
+  void setAngle(glm::vec2 angle);
 
 protected:
   void init(float initAngleX = 0.0f, float initAngleY = 0.0f);

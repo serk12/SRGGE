@@ -118,8 +118,7 @@ void Mesh::render() const {
     mGround->render();
     mQttyTriangles += mGround->getTriangleSize();
   }
-  if (isVisible() || mName == TileMapLoader::WALL ||
-      mName == TileMapLoader::GROUND) {
+  if (isVisible()) {
     mModel->render();
     mQttyTriangles += mModel->getTriangleSize();
   }

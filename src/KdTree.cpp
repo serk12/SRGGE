@@ -123,7 +123,7 @@ void KdTree::traverseNode(std::stack<KdTree *> &traversalStack,
   }
 }
 
-Visibility KdTree::computeVisibility(int frame) {
+Visibility KdTree::computeVisibility(unsigned int frame) {
   Visibility result;
   result.wasVisible =
       mVisible && (frame - mLastFrameVisible <= OCCLUDED_FRAMES);

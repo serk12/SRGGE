@@ -16,7 +16,9 @@ LOD_FLAG=""
 LOD_LEVEL=""
 MODEL_NAME=""
 CULLING_FLAG=""
+COLL_MAP_FLAG=""
 CULLING_LEVEL=""
+CULLING_MAP=""
 CONFIG="Debug"
 COMMAND=$1
 shift
@@ -31,7 +33,7 @@ do
         INPUT_FILE="models/${key}.ply"
         MODEL_NAME=${key}
         ;;
-        +(big_line|big_museum|small_museum|min_museum|big_grid|small_grid))
+        +(big_line|big_museum|small_museum|min_museum|nano_museum|big_grid|small_grid))
         DEFAULT_TAILMAP="resources/${key}.txt"
         INPUT_FILE="resources/${key}.txt"
         MODEL_NAME=${key}
@@ -48,6 +50,13 @@ do
         CULLING_FLAG="--CULLING"
         shift
         CULLING_LEVEL=$1
+        if [ $CULLING_LEVEL == 6 ]; then
+            shift
+            CULLING_MAP=$1
+        fi
+        ;;
+        --calc-LOD-MAP|--calc-MAP|-m|--cm)
+        COLL_MAP_FLAG=--calc-COLL-MAP
         ;;
         --RELEASE)
         CONFIG="Release"
@@ -102,8 +111,8 @@ esac
 # run
 case $COMMAND in
 ""|"run"|"build")
-    echo $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
-    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $OUTPUT_FILE
+    echo $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $CULLING_MAP $COLL_MAP_FLAG $OUTPUT_FILE
+    ./BaseCode $INPUT_FILE $LOD_FLAG $LOD_LEVEL $CULLING_FLAG $CULLING_LEVEL $CULLING_MAP $COLL_MAP_FLAG $OUTPUT_FILE
     ;;
 "test_occlusion")
     rm log.log* *.log

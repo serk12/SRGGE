@@ -1,23 +1,24 @@
 #include "Camera.h"
-#define GLM_FORCE_RADIANS
+
 #include "Debug.h"
+#include "Define.h"
+
+#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#define PI 3.14159f
 
 Camera::Camera() {}
 
 Camera::~Camera() {}
 
 void Camera::init(float initAngleX, float initAngleY) {
-  pos = glm::vec3(0.0f, 0.8f, 0.0f);
+  pos = glm::vec3(0.0f, PLAYER_Y, 0.0f);
   angleX = initAngleX;
   angleY = initAngleY;
   computeViewMatrix();
 }
 
-std::vector<glm::vec4> Camera::getFrustum() {
+std::vector<glm::vec4> Camera::getFrustum() const {
   std::vector<glm::vec4> result(6);
   glm::mat4 m = getProjectionMatrix() * getViewMatrix();
   // right
@@ -41,7 +42,7 @@ std::vector<glm::vec4> Camera::getFrustum() {
 }
 
 void Camera::resizeCameraViewport(int width, int height) {
-  projection = glm::perspective(60.f / 180.f * PI, float(width) / float(height),
+  projection = glm::perspective(FOV / 180.f * PI, float(width) / float(height),
                                 0.01f, 100.0f);
 }
 
@@ -68,8 +69,18 @@ void Camera::computeViewMatrix() {
   view = glm::translate(view, pos);
 }
 
-glm::mat4 &Camera::getProjectionMatrix() { return projection; }
+const glm::mat4 &Camera::getProjectionMatrix() const { return projection; }
 
-glm::mat4 &Camera::getViewMatrix() { return view; }
+const glm::mat4 &Camera::getViewMatrix() const { return view; }
 
 glm::vec3 Camera::getPos() const { return pos; }
+
+void Camera::setPos(glm::vec3 p) {
+  pos = p;
+  computeViewMatrix();
+}
+void Camera::setAngle(glm::vec2 angle) {
+  angleX = angle.x;
+  angleY = angle.y;
+  computeViewMatrix();
+}

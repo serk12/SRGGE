@@ -1,362 +1,74 @@
-#include "Debug.h"
-#include <cmath>
-#include <queue>
-#include <stack>
-#define GLM_FORCE_RADIANS
 #include "Scene.h"
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+
+#include "Debug.h"
 
 #include <GL/glut.h>
 
-#include "Define.h"
-#include "TileMapLoader.h"
-
-const int Scene::VISIBLE_PIXELS_THRESHOLD = 200;
-const int Scene::HISTERESY_ELAPSE_TIME = 250; // 0.25s = 250
-const float Scene::HISTERESY_MODELS_COUNT = 0.10;
-const int Scene::QTTY_MEAN = 100;
-
-struct Benefit {
-  float benefit;
-  int triangles;
-  Mesh *mesh;
-
-  Benefit(float b, int t, Mesh *m) {
-    benefit = b;
-    triangles = t;
-    mesh = m;
-  }
-};
-
-struct Compare {
-  bool operator()(Benefit a, Benefit b) {
-    return a.benefit < b.benefit || a.triangles < b.triangles;
-  }
-};
-
-using BenefitQueue =
-    std::priority_queue<Benefit, std::vector<Benefit>, Compare>;
-
-Query::Query(KdTree *t) {
-  GLuint queries[1];
-  glGenQueries(1, queries);
-  tree = t;
-  queryID = queries[0];
-  qttyVisiblePixels = -1;
-  done = false;
-}
-
-bool Query::getQuery() {
-  GLint i_done;
-  glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &i_done);
-  done = i_done == GL_TRUE;
-  if (done) {
-    glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &qttyVisiblePixels);
-  }
-  return done;
-}
-
-void Query::waitQuery() {
-  if (done)
-    return;
-  while (!done) {
-    GLint i_done;
-    glGetQueryObjectiv(queryID, GL_QUERY_RESULT_AVAILABLE, &i_done);
-    done = i_done == GL_TRUE;
-  }
-  glGetQueryObjectiv(queryID, GL_QUERY_RESULT, &qttyVisiblePixels);
-}
-
-Scene::Scene() {}
+Scene::Scene()
+    : bPolygonFill(true), bPolygonBB(false), Occlusion(), ManagerLOD() {}
 
 Scene::~Scene() {
-  for (auto &m : meshes) {
+  for (auto &m : mMeshes) {
     delete m;
   }
-  meshes.clear();
+  mMeshes.clear();
 }
 
 void Scene::init(const std::string &fn, CullingMethod cm) {
-  cullingPolicy = cm;
-  bPolygonFill = true;
-  bPolygonBB = false;
+  this->Occlusion::init(cm);
   filename = fn;
-  bKDTree = -1;
-  qttyMean = frame = histeresyCount = 0;
-  qttyMean = 1;
-  qttyTriangles = 0;
-  qttyTrianglesTopFPS = -1;
-  basicProgram.initShaders("shaders/basic.vert", "shaders/basic.frag");
-  Mesh::setShaderProgram(&basicProgram);
-  player.init();
   std::string formatFile =
       std::string(&filename[filename.size() - 3], &filename[filename.size()]);
   if (formatFile == "ply") {
-    loadMesh();
+    loadMesh(filename);
   } else if (formatFile == "txt") {
-    loadTileMap();
-  }
-}
-
-void Scene::loadMesh() {
-  std::string formatFile =
-      std::string(&filename[filename.size() - 3], &filename[filename.size()]);
-  if (formatFile == "ply") {
-    Mesh *mesh = new Mesh(filename, next_pos);
-    meshes.push_back(mesh);
-    next_pos.x = (int(next_pos.x) + 1) % 2;
-    next_pos.z = (int(next_pos.z) + int(next_pos.x == 0));
-  } else {
-    // this should not happen
-    Debug::error("filename is a txt");
-  }
-}
-
-void Scene::loadTileMap() {
-  TileMapModels tilemap = TileMapLoader::instance().load(filename);
-  int i = -tilemap.size() / 2;
-  for (auto t : tilemap) {
-    int j = -tilemap[0].size() / 2;
-    for (std::string m : t) {
-      if (m != TileMapLoader::EMPTY) {
-        Mesh *mesh = new Mesh(m, glm::vec3(i, -1.0f, j));
-        meshes.push_back(mesh);
-      }
-      ++j;
-    }
-    ++i;
-  }
-  kdTree = new KdTree(meshes);
-}
-
-int Scene::getQttyTriangles() const { return qttyTriangles / qttyMean; }
-
-void Scene::unloadMesh() {
-  if (meshes.size() > 0) {
-    Mesh *mesh = meshes.back();
-    delete mesh;
-    meshes.pop_back();
-
-    next_pos.x = (int(next_pos.x) - 1) % 2;
-    next_pos.z = (int(next_pos.z) - 1);
-  }
-}
-
-void Scene::updateLODs(int deltaTime) {
-  int meanQttyTriangles = qttyTriangles / qttyMean;
-  histeresyCount += deltaTime;
-  if (histeresyCount >= HISTERESY_ELAPSE_TIME) {
-    histeresyCount -= HISTERESY_ELAPSE_TIME;
-    int maxCostTriangles = meanQttyTriangles;
-    // rememver the max qttyTriangles with ~ FPS fps
-    if (1.0f / deltaTime * 1000.0f >= 0.9f * (1.0f / FPS) &&
-        meanQttyTriangles > qttyTrianglesTopFPS) {
-      qttyTrianglesTopFPS = meanQttyTriangles;
-    } else if (qttyTrianglesTopFPS != -1) {
-      maxCostTriangles = qttyTrianglesTopFPS;
-    }
-    float maxCost = ((maxCostTriangles / deltaTime * 1000.0f) * FPS);
-    bool decrease = meanQttyTriangles > maxCost;
-    BenefitQueue benefitQueue;
-    for (auto &m : meshes) {
-      if (m->isVisible()) {
-        Benefit benefit(m->getMaxBenefit(player.getPos(), decrease),
-                        m->getTriangleSize(), m);
-        benefitQueue.push(benefit);
-      } else {
-        m->increaseLOD();
-      }
-    }
-    float totalCost = meanQttyTriangles;
-    int qttyChanges = 0;
-    while (!benefitQueue.empty()) {
-      auto benefit = benefitQueue.top();
-      benefitQueue.pop();
-      if (decrease) {
-        if (totalCost <= maxCost) {
-          break;
-        } else {
-          benefit.mesh->decreaseLOD();
-          totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
-        }
-      } else {
-        if (totalCost > maxCost) {
-          break;
-        } else {
-          totalCost += benefit.triangles - benefit.mesh->getTriangleSize();
-          benefit.mesh->increaseLOD();
-        }
-      }
-      ++qttyChanges;
-      if (qttyChanges >= meshes.size() * HISTERESY_MODELS_COUNT) {
-        break;
-      }
-    }
+    loadTileMap(filename);
   }
 }
 
 void Scene::update(int deltaTime) {
-  player.update(deltaTime);
-  updateLODs(deltaTime);
-}
-
-bool Scene::viewCulling(const Mesh &mesh) {
-  auto frustum = player.getFrustum();
-  for (auto &p : frustum) {
-    if (mesh.planeTest(p) != Collision::Positive) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// https://www.mbsoftworks.sk/tutorials/opengl3/27-occlusion-query/
-void Scene::occlusionCullingSaW() {
-  GLuint queries[meshes.size()];
-  glGenQueries(meshes.size(), queries);
-  unsigned int i = 0;
-  for (auto &mesh : meshes) {
-    if (mesh->canAddToKdTree() && mesh->stillVisible() &&
-        (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
-      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
-      glBeginQuery(GL_SAMPLES_PASSED, queries[i]);
-      mesh->renderBoundinBox();
-      glEndQuery(GL_SAMPLES_PASSED);
-    }
-    ++i;
-  }
-  i = 0;
-  for (auto &mesh : meshes) {
-    if (mesh->canAddToKdTree() && mesh->stillVisible() &&
-        (cullingPolicy == OCCLUSION || mesh->isInsideFrustum())) {
-      int done = 0;
-      while (!done) {
-        glGetQueryObjectiv(queries[i], GL_QUERY_RESULT_AVAILABLE, &done);
-      }
-      int result = -1;
-      glGetQueryObjectiv(queries[i], GL_QUERY_RESULT, &result);
-      if (result == -1) {
-        Debug::error("S&W Occlusion query ERROR");
-      }
-      mesh->setOcclusion(result < VISIBLE_PIXELS_THRESHOLD);
-    }
-    ++i;
-  }
-}
-
-void Scene::occlusionCulling() {
-  std::stack<KdTree *> traversalStack;
-  std::queue<Query *> queryQueue;
-
-  traversalStack.push(kdTree);
-  while (!traversalStack.empty() || !queryQueue.empty()) {
-    while (!queryQueue.empty() &&
-           (queryQueue.front()->getQuery() || traversalStack.empty())) {
-      queryQueue.front()->waitQuery();
-      auto query = queryQueue.front();
-      queryQueue.pop();
-      if (query->qttyVisiblePixels == -1) {
-        Debug::error("kdtree Occlusion query ERROR");
-      } else if (query->qttyVisiblePixels >
-                 VISIBLE_PIXELS_THRESHOLD * query->tree->getQttyElements()) {
-        query->tree->pullUpVisibility();
-        query->tree->traverseNode(traversalStack, basicProgram);
-      }
-      delete query;
-    }
-    if (!traversalStack.empty()) {
-      auto next_tree = traversalStack.top();
-      traversalStack.pop();
-      if (next_tree->getQttyElements() == 0) {
-        next_tree->traverseNode(traversalStack, basicProgram);
-      }
-      if (viewCulling(next_tree->getAABBMesh())) {
-        auto t = *next_tree;
-        Visibility visibility = next_tree->computeVisibility(frame);
-        if (!visibility.opened) {
-          auto *newQuery = new Query(next_tree);
-          glBeginQuery(GL_SAMPLES_PASSED, newQuery->queryID);
-          newQuery->tree->renderModels(basicProgram);
-          glEndQuery(GL_SAMPLES_PASSED);
-          queryQueue.push(newQuery);
-        }
-        if (visibility.wasVisible) {
-          next_tree->traverseNode(traversalStack, basicProgram);
-        }
-      }
-    }
-  }
-  kdTree->nextFrame();
+  mPlayer.update(deltaTime);
+  this->ManagerLOD::update(deltaTime, mMeshes, mPlayer);
+  this->Occlusion::update(deltaTime);
 }
 
 void Scene::render() {
-  ++frame;
-  if (meshes.size() > 0) {
-    bool view = cullingPolicy == ALL || cullingPolicy == VIEW ||
-                cullingPolicy == ALL_SAW;
-    bool occluded_kd = cullingPolicy == ALL || cullingPolicy == OCCLUSION;
-    bool occluded_saw =
-        cullingPolicy == ALL_SAW || cullingPolicy == OCCLUSION_SAW;
-    bool occluded = (occluded_kd || occluded_saw) && kdTree != nullptr;
-    for (auto &mesh : meshes) {
-      if (view) {
-        mesh->setInsideFrustum(viewCulling(*mesh));
-      }
-    }
-
-    basicProgram.use();
-    basicProgram.setUniformMatrix4f("projection", player.getProjectionMatrix());
-    basicProgram.setUniformMatrix4f("view", player.getViewMatrix());
-    basicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
-    basicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
+  if (mMeshes.size() > 0) {
+    testFrustrumCulling();
+    mBasicProgram.use();
+    mBasicProgram.setUniformMatrix4f("projection",
+                                     mPlayer.getProjectionMatrix());
+    mBasicProgram.setUniformMatrix4f("view", mPlayer.getViewMatrix());
+    mBasicProgram.setUniform1i("bLighting", bPolygonFill ? 1 : 0);
+    mBasicProgram.setUniform4f("color", 0.9f, 0.9f, 0.95f, 1.0f);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    if (qttyMean == QTTY_MEAN) {
-      qttyMean = 1;
-      qttyTriangles = 0;
+    if (mQttyMean == QTTY_MEAN) {
+      mQttyMean = 1;
+      mQttyTriangles = 0;
     } else {
-      ++qttyMean;
+      ++mQttyMean;
     }
-    for (auto &mesh : meshes) {
-      basicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
+    for (auto &mesh : mMeshes) {
+      mBasicProgram.setUniformMatrix4f("model", mesh->getModelMatrix());
       if (!bPolygonFill) {
-        basicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+        mBasicProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(0.5f, 1.0f);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         mesh->render();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDisable(GL_POLYGON_OFFSET_FILL);
-        basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
+        mBasicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
       }
       if (!bPolygonBB) {
         mesh->render();
       } else {
         mesh->renderBoundinBox();
       }
-      qttyTriangles += mesh->getTriangleSize();
+      mQttyTriangles += mesh->getTriangleSize();
     }
-
-    if (occluded) {
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-      glDepthMask(GL_FALSE);
-      if (occluded_saw) {
-        occlusionCullingSaW();
-      }
-      if (occluded_kd) {
-        occlusionCulling();
-      }
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      glDepthMask(GL_TRUE);
-    }
-    if (kdTree != nullptr) {
-      if (bKDTree >= 0 && bKDTree <= KdTree::MAX_DEEP + 1) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        basicProgram.setUniform4f("color", 0.0f, 0.0f, 0.0f, 1.0f);
-        kdTree->render(basicProgram, bKDTree);
-      }
-    }
+    this->Occlusion::render();
+    testOcclusion();
   }
 }
 
@@ -366,44 +78,34 @@ void Scene::keyEvent(int key, int specialkey, bool pressed) {
         std::string(&filename[filename.size() - 3], &filename[filename.size()]);
     if (formatFile == "ply") {
       if (key == '+')
-        loadMesh();
+        loadMesh(filename);
       else if (key == '-')
-        unloadMesh();
+        unloadMesh(filename);
       else if ((key >= '0') && (key <= '9')) {
         int num = int(key) - int('0');
-        while (meshes.size() != num) {
-          if (meshes.size() > num) {
-            unloadMesh();
+        while (mMeshes.size() != num) {
+          if (mMeshes.size() > num) {
+            unloadMesh(filename);
           } else {
-            loadMesh();
+            loadMesh(filename);
           }
         }
       }
     }
-
     if (specialkey == GLUT_KEY_F1) {
       bPolygonFill = !bPolygonFill;
     }
     if (specialkey == GLUT_KEY_F2) {
       bPolygonBB = !bPolygonBB;
     }
-    if (specialkey == GLUT_KEY_F4) {
-      bKDTree = (bKDTree + 1) % (KdTree::MAX_DEEP + 3);
-    }
-    if (specialkey == GLUT_KEY_F3) {
-      if (bKDTree <= KdTree::MAX_DEEP + 1) {
-        bKDTree = KdTree::MAX_DEEP + 2;
-      } else {
-        bKDTree = KdTree::MAX_DEEP + 1;
-      }
-    }
   }
-  player.keyEvent(key, specialkey, pressed);
+  this->Occlusion::keyEvent(key, specialkey, pressed);
+  mPlayer.keyEvent(key, specialkey, pressed);
 }
 
 void Scene::mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                       bool *mouseButtons) {
-  player.mouseMove(x, y, lastMousePos, mouseButtons);
+  mPlayer.mouseMove(x, y, lastMousePos, mouseButtons);
 }
 
-void Scene::resize(int width, int height) { player.resize(width, height); }
+void Scene::resize(int width, int height) { mPlayer.resize(width, height); }
