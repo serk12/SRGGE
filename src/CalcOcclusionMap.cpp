@@ -65,7 +65,7 @@ void CalcOcclusionMap::init(int argc, char **argv,
 }
 
 void CalcOcclusionMap::resizeCallback(int width, int height) {
-  CalcOcclusionMap::instance().mPlayer.resize(width, height);
+  CalcOcclusionMap::instance().resize(width, height);
 }
 
 void CalcOcclusionMap::callbackRender() {

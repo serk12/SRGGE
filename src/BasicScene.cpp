@@ -51,3 +51,7 @@ void BasicScene::loadTileMap(const std::string &filename) {
     ++i;
   }
 }
+
+void BasicScene::resize(int width, int height) {
+  mPlayer.resize(width, height);
+}

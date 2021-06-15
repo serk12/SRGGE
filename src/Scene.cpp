@@ -107,5 +107,3 @@ void Scene::mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                       bool *mouseButtons) {
   mPlayer.mouseMove(x, y, lastMousePos, mouseButtons);
 }
-
-void Scene::resize(int width, int height) { mPlayer.resize(width, height); }

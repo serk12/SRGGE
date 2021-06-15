@@ -19,7 +19,6 @@ public:
   void render();
   void update(int deltaTime);
 
-  void resize(int width, int height);
   void keyEvent(int key, int specialkey, bool pressed);
   void mouseMove(int x, int y, const glm::ivec2 &lastMousePos,
                  bool *mouseButtons);

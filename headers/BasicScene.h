@@ -8,6 +8,10 @@
 #include <list>
 
 class BasicScene {
+
+public:
+  void resize(int width, int height);
+
 protected:
   void init();
   void loadMesh(const std::string &filename);
